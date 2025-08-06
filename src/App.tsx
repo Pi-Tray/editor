@@ -1,7 +1,5 @@
 import "./App.css";
 
-import {Route, Switch} from "wouter";
-
 import {LeftNav} from "./components/LeftNav";
 import {StatusToast} from "./components/StatusToast";
 
@@ -10,26 +8,33 @@ import {GridEditorPage} from "./pages/GridEditorPage";
 import {PluginManagerPage} from "./pages/PluginManagerPage";
 import {AssetManagerPage} from "./pages/AssetManagerPage";
 import {SettingsPage} from "./pages/SettingsPage";
+import {AnimatedRouter} from "./components/AnimatedRouter.tsx";
 
 const App = () => {
     return (
         <div className="font-dm-sans flex h-screen bg-base-100 select-none">
-            <LeftNav />
+            <LeftNav/>
             <main className="py-4 px-6 w-full h-full">
-                <Switch>
-                    <Route path="/" component={GridEditorPage} />
-                    <Route path="/plugins" component={PluginManagerPage} />
-                    <Route path="/assets" component={AssetManagerPage} />
+                <AnimatedRouter
+                    routes={{
+                        "/": <GridEditorPage/>,
+                        "/plugins": <PluginManagerPage/>,
+                        "/assets": <AssetManagerPage/>,
+                        "/settings": <SettingsPage/>,
+                    }}
 
-                    <Route path="/settings" component={SettingsPage} />
+                    not_found={<NotFound/>}
 
-                    <Route>
-                        <NotFound />
-                    </Route>
-                </Switch>
+                    animation_props={{
+                        initial: {opacity: 0},
+                        animate: {opacity: 1},
+                        exit: {opacity: 0},
+                        transition: {duration: 0.25, ease: "easeInOut"},
+                    }}
+                />
             </main>
 
-            <StatusToast />
+            <StatusToast/>
         </div>
     )
 }
