@@ -12,8 +12,8 @@
   "app": {
     "windows": [
       {
-        "title": "pi-tray-editor",
-        "width": 800,
+        "title": "Pi-Tray Editor",
+        "width": 1000,
         "height": 600
       }
     ],
