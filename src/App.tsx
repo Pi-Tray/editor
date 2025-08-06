@@ -2,11 +2,13 @@ import "./App.css";
 
 import {Route, Switch} from "wouter";
 
-import {LeftNav} from "./components/LeftNav.tsx";
+import {LeftNav} from "./components/LeftNav";
+import {StatusToast} from "./components/StatusToast";
 
-import {GridEditor} from "./screens/GridEditor.tsx";
-import {NotFound} from "./screens/NotFound.tsx";
-import {StatusToast} from "./components/StatusToast.tsx";
+import {NotFound} from "./pages/NotFound";
+import {GridEditorPage} from "./pages/GridEditorPage";
+import {PluginManagerPage} from "./pages/PluginManagerPage";
+import {SettingsPage} from "./pages/SettingsPage";
 
 const App = () => {
     return (
@@ -14,7 +16,9 @@ const App = () => {
             <LeftNav />
             <main className="py-4 px-6 w-full h-full">
                 <Switch>
-                    <Route path="/" component={GridEditor} />
+                    <Route path="/" component={GridEditorPage} />
+                    <Route path="/plugins" component={PluginManagerPage} />
+                    <Route path="/settings" component={SettingsPage} />
 
                     <Route>
                         <NotFound />
