@@ -6,7 +6,7 @@ import {LeftNav} from "./components/LeftNav.tsx";
 
 import {GridEditor} from "./screens/GridEditor.tsx";
 import {NotFound} from "./screens/NotFound.tsx";
-import {Statusoast} from "./components/StatusToast.tsx";
+import {StatusToast} from "./components/StatusToast.tsx";
 
 const App = () => {
     return (
@@ -22,7 +22,7 @@ const App = () => {
                 </Switch>
             </main>
 
-            <Statusoast />
+            <StatusToast />
         </div>
     )
 }
