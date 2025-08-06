@@ -8,6 +8,7 @@ import {StatusToast} from "./components/StatusToast";
 import {NotFound} from "./pages/NotFound";
 import {GridEditorPage} from "./pages/GridEditorPage";
 import {PluginManagerPage} from "./pages/PluginManagerPage";
+import {AssetManagerPage} from "./pages/AssetManagerPage";
 import {SettingsPage} from "./pages/SettingsPage";
 
 const App = () => {
@@ -18,6 +19,8 @@ const App = () => {
                 <Switch>
                     <Route path="/" component={GridEditorPage} />
                     <Route path="/plugins" component={PluginManagerPage} />
+                    <Route path="/assets" component={AssetManagerPage} />
+
                     <Route path="/settings" component={SettingsPage} />
 
                     <Route>
