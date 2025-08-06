@@ -10,9 +10,9 @@ import {Statusoast} from "./components/StatusToast.tsx";
 
 const App = () => {
     return (
-        <div className="flex h-screen bg-base-100 select-none">
+        <div className="font-dm-sans flex h-screen bg-base-100 select-none">
             <LeftNav />
-            <main className="font-dm-sans py-4 px-6 w-full h-full">
+            <main className="py-4 px-6 w-full h-full">
                 <Switch>
                     <Route path="/" component={GridEditor} />
 
