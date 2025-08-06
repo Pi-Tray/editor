@@ -6,10 +6,11 @@ import {LeftNav} from "./components/LeftNav.tsx";
 
 import {GridEditor} from "./screens/GridEditor.tsx";
 import {NotFound} from "./screens/NotFound.tsx";
+import {Statusoast} from "./components/StatusToast.tsx";
 
 const App = () => {
     return (
-        <div className="flex h-screen bg-base-100">
+        <div className="flex h-screen bg-base-100 select-none">
             <LeftNav />
             <main className="font-dm-sans py-4 px-6 w-full h-full">
                 <Switch>
@@ -20,6 +21,8 @@ const App = () => {
                     </Route>
                 </Switch>
             </main>
+
+            <Statusoast />
         </div>
     )
 }
