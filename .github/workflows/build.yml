@@ -88,9 +88,18 @@ jobs:
         with:
           args: ${{ matrix.args }}
 
+      # Process the JSON paths into a proper multiline string using jq
+      - name: Prepare artifact paths
+        id: prep_paths
+        run: |
+          json_paths='${{ steps.tauri-build.outputs.artifactPaths }}'
+          # The 'jq -r .[]' command reads the JSON and outputs each item on a new line.
+          # This is the most reliable way to create a multiline string from JSON.
+          echo "paths=$(echo "$json_paths" | jq -r .[])" >> "$GITHUB_OUTPUT"
+
       # This step uploads the build artifacts.
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: tauri-app-${{ matrix.platform }}-${{ matrix.args || 'default' }}-${{ steps.tauri-build.outputs.appVersion }}
-          path: ${{ join(fromJSON(steps.tauri-build.outputs.artifactPaths), '\n') }}
+          path: ${{ steps.prep_paths.outputs.paths }}
