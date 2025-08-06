@@ -1,0 +1,64 @@
+name: "Build on Main Push"
+
+on:
+  push:
+    branches:
+      - main
+
+# This workflow builds your Tauri app and uploads the binaries as artifacts.
+
+jobs:
+  build-tauri:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: "macos-latest" # for Arm based macs (M1 and above).
+            args: "--target aarch64-apple-darwin"
+          - platform: "macos-latest" # for Intel based macs.
+            args: "--target x86_64-apple-darwin"
+          - platform: "ubuntu-22.04"
+            args: ""
+          - platform: "windows-latest"
+            args: ""
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          # Those targets are only used on macos runners.
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: install frontend dependencies
+        run: npm install
+
+      # This step builds the app.
+      - uses: tauri-apps/tauri-action@v0
+        id: tauri-build # Add an ID to reference the outputs of this step
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: ${{ matrix.args }}
+
+      # This step uploads the build artifacts.
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          # The name of the artifact. It's good practice to make this unique for each platform.
+          name: tauri-app-${{ matrix.platform }}-${{ matrix.args || 'default' }}
+          # The path to the file(s) to upload. This is taken from the output of the tauri-build step.
+          path: ${{ steps.tauri-build.outputs.bundlePaths }}
