@@ -93,4 +93,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tauri-app-${{ matrix.platform }}-${{ matrix.args || 'default' }}-${{ steps.tauri-build.outputs.appVersion }}
-          path: ${{ steps.tauri-build.outputs.artifactPaths }}
+          path: ${{ join(fromJSON(steps.tauri-build.outputs.artifactPaths), '\n') }}
