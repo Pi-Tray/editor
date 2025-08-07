@@ -8,7 +8,8 @@ import {GridEditorPage} from "./pages/GridEditorPage";
 import {PluginManagerPage} from "./pages/PluginManagerPage";
 import {AssetManagerPage} from "./pages/AssetManagerPage";
 import {SettingsPage} from "./pages/SettingsPage";
-import {AnimatedRouter} from "./components/AnimatedRouter.tsx";
+import {AnimatedRouter} from "./components/AnimatedRouter";
+import {DevToolsPage} from "./pages/DevToolsPage";
 
 const App = () => {
     return (
@@ -21,6 +22,7 @@ const App = () => {
                         "/plugins": <PluginManagerPage/>,
                         "/assets": <AssetManagerPage/>,
                         "/settings": <SettingsPage/>,
+                        "/devtools": <DevToolsPage />,
                     }}
 
                     not_found={<NotFound/>}
