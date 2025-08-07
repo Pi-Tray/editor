@@ -14,7 +14,7 @@ const ToggleSetting = ({label, config_key}: SettingProps) => {
 
             <input
                 type="checkbox"
-                className="toggle"
+                className="toggle toggle-primary"
 
                 checked={value}
                 onChange={
