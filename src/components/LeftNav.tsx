@@ -46,7 +46,7 @@ export const LeftNav = () => {
           <LeftNavItem href="/" title="Grid Editor" icon={<LayoutGrid />} />
           <LeftNavItem href="/plugins" title="Plugin Manager" icon={<ToyBrick />} />
           <LeftNavItem href="/assets" title="Asset Manager" icon={<Files />} />
-          
+
           <LeftNavItem href="/settings" title="Settings" icon={<Settings />} className="mt-auto" />
       </ul>
     );
