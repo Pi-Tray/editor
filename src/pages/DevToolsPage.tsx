@@ -22,11 +22,11 @@ const SPLASH_TEXTS = [
     "const captain_hook = usePirate();",
     "Is this your card?\nNo? Check in node_modules.",
     "Why did the component list take so long to get to work?\nIt lost its keys.",
-    "Ask your doctor if React is right for you.\nSide effects may include: componentDidMount, componentDidUpdate, componentWillUnmount, and death.",
+    "Ask your doctor if React is right for you. Side effects may include:\ncomponentDidMount, componentDidUpdate, componentWillUnmount, and death.",
     "I promise I'll a-wait for you.",
-    "Backend JS developers, don't forget to express yourself",
-    "My parents always told me I could be anything I wanted to be.\nThen I started programming, and ESLint immediately informed me that any was not a permitted type.",
-    "In JavaScript, you find out your mistakes when you run the code.\nIn TypeScript, you find out your mistakes immediately, along with a detailed essay explaining why you should have known better.",
+    "Backend JS developers, don't forget to express yourself.",
+    "My parents always told me I could be anything I wanted to be.\nThen I started programming, and ESLint immediately informed me that\nany was not a permitted type.",
+    "In JavaScript, you find out your mistakes when you run the code.\nIn TypeScript, you find out immediately, along with a detailed essay\nto explain why you should have known better.",
     "Mutable data is an anti-pattern.\nUse the const const const keyword to make a constant constant constant."
 ];
 
