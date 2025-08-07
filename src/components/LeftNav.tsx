@@ -51,11 +51,15 @@ export const LeftNav = () => {
           <LeftNavItem href="/assets" title="Asset Manager" icon={<Files />} />
 
           <div className="mt-auto w-0">
-            {show_devtools &&
-                <LeftNavItem href="/devtools" title="Developer Tools" icon={<Code />} />
-            }
+              <AnimatePresence>
+                  {show_devtools &&
+                      <motion.div initial={{x: -100}} animate={{x: 0}} exit={{x: -100}}>
+                          <LeftNavItem href="/devtools" title="Developer Tools" icon={<Code />} />
+                      </motion.div>
+                  }
+              </AnimatePresence>
 
-            <LeftNavItem href="/settings" title="Settings" icon={<Settings />} />
+              <LeftNavItem href="/settings" title="Settings" icon={<Settings />} />
           </div>
       </ul>
     );
