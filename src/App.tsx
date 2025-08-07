@@ -13,7 +13,7 @@ import {DevToolsPage} from "./pages/DevToolsPage";
 
 const App = () => {
     return (
-        <div className="font-dm-sans flex h-screen bg-base-100 select-none">
+        <div className="font-dm-sans flex h-screen max-h-screen bg-base-100 select-none">
             <LeftNav/>
             <main className="py-4 px-6 w-full h-full">
                 <AnimatedRouter

@@ -27,12 +27,12 @@ const ToggleSetting = ({label, config_key}: SettingProps) => {
 
 export const SettingsPage = () => {
     return (
-        <div className="h-full w-full">
+        <>
             <h1 className="text-2xl font-bold">Settings</h1>
 
             <div className="flex flex-wrap gap-4 mt-4">
                 <ToggleSetting label="Show DevTools" config_key="devtools" />
             </div>
-        </div>
+        </>
     );
 }
