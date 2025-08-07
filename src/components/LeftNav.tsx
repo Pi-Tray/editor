@@ -2,6 +2,7 @@ import {Link} from "wouter";
 import {usePathname} from "wouter/use-browser-location";
 
 import {Files, LayoutGrid, Settings, ToyBrick} from "lucide-react";
+import {motion, AnimatePresence} from "motion/react";
 
 interface LeftNavItemProps {
     icon: React.ReactNode;
@@ -25,11 +26,13 @@ const LeftNavItem = ({href, title, icon, className = "", link_className = ""}: L
 
     return (
         <li className={`indicator ${className}`}>
-            {is_active &&
-                <div className="indicator-item indicator-middle indicator-start flex flex-col items-center justify-center pointer-events-none">
-                    <div className="rounded-full h-2 w-2 aspect-square bg-primary"></div>
-                </div>
-            }
+            <AnimatePresence>
+                {is_active &&
+                    <motion.div initial={{scale: 0}} animate={{scale: 1}} exit={{scale: 0}} className="indicator-item indicator-middle indicator-start flex flex-col items-center justify-center pointer-events-none">
+                        <div className="rounded-full h-2 w-2 aspect-square bg-primary"></div>
+                    </motion.div>
+                }
+            </AnimatePresence>
             <Link href={href} className={`tooltip tooltip-right ${link_className}`} data-tip={title}>
                 {icon}
             </Link>
