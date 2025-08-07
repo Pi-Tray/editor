@@ -9,8 +9,11 @@ interface LeftNavItemProps {
     icon: React.ReactNode;
     title: string;
     href: string;
+
     className?: string;
     link_className?: string;
+
+    mark_if_nested?: boolean;
 }
 
 /**
@@ -20,10 +23,17 @@ interface LeftNavItemProps {
  * @param icon the icon to display
  * @param className additional class names for the list item
  * @param link_className additional class names for the link
+ * @param mark_if_nested whether to mark the nav item if the pathname is a nested path of the href, e.g. `/foo/bar` for `href="/foo"` (default: false)
  * @constructor
  */
-const LeftNavItem = ({href, title, icon, className = "", link_className = ""}: LeftNavItemProps) => {
-    const is_active = usePathname() === href;
+const LeftNavItem = ({href, title, icon, className = "", link_className = "", mark_if_nested = false}: LeftNavItemProps) => {
+    const pathname = usePathname();
+
+    let is_active = pathname === href;
+    if (mark_if_nested) {
+        // check if the current pathname starts with the href
+        is_active = pathname.startsWith(href);
+    }
 
     return (
         <li className={`indicator ${className}`}>
@@ -44,6 +54,8 @@ const LeftNavItem = ({href, title, icon, className = "", link_className = ""}: L
 export const LeftNav = () => {
     const [show_devtools] = useConfigValue("devtools");
 
+    // TODO: animation plays when devtools navitem repaints (e.g. when visitng nested devtools pages). could patch by checking if on the settings page as a hack?
+
     return (
       <ul className="menu h-full bg-base-300">
           <LeftNavItem href="/" title="Grid Editor" icon={<LayoutGrid />} />
@@ -54,7 +66,7 @@ export const LeftNav = () => {
               <AnimatePresence>
                   {show_devtools &&
                       <motion.div initial={{x: -100}} animate={{x: 0}} exit={{x: -100}}>
-                          <LeftNavItem href="/devtools" title="Developer Tools" icon={<Code />} />
+                          <LeftNavItem href="/devtools" title="Developer Tools" icon={<Code />} mark_if_nested={true} />
                       </motion.div>
                   }
               </AnimatePresence>
