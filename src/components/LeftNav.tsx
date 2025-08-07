@@ -3,7 +3,7 @@ import {usePathname} from "wouter/use-browser-location";
 
 import {Code, Files, LayoutGrid, Settings, ToyBrick} from "lucide-react";
 import {motion, AnimatePresence} from "motion/react";
-import {useConfigValue} from "../util/config.ts";
+import {useConfigValue} from "../util/config";
 
 interface LeftNavItemProps {
     icon: React.ReactNode;

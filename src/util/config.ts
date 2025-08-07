@@ -12,7 +12,9 @@ const DEFAULTS = {
     devtools: false
 };
 
-const change_listeners: Partial<Record<keyof typeof DEFAULTS, ((value: any) => void)[]>> = {};
+export type ConfigKey = keyof typeof DEFAULTS;
+
+const change_listeners: Partial<Record<ConfigKey, ((value: any) => void)[]>> = {};
 
 /**
  * Subscribe to changes in a configuration value.<br>
@@ -20,7 +22,7 @@ const change_listeners: Partial<Record<keyof typeof DEFAULTS, ((value: any) => v
  * @param key the key of the configuration value to subscribe to
  * @param callback the callback to call when the configuration value changes
  */
-export const subscribe_to_config_change = (key: keyof typeof DEFAULTS, callback: (value: any) => void): void => {
+export const subscribe_to_config_change = (key: ConfigKey, callback: (value: any) => void): void => {
     if (!change_listeners[key]) {
         change_listeners[key] = [];
     }
@@ -33,14 +35,14 @@ export const subscribe_to_config_change = (key: keyof typeof DEFAULTS, callback:
  * @param key the key of the configuration value to unsubscribe from
  * @param callback a reference equivalent to the callback passed to `subscribe_to_config_change`
  */
-export const unsubscribe_from_config_change = (key: keyof typeof DEFAULTS, callback: (value: any) => void): void => {
+export const unsubscribe_from_config_change = (key: ConfigKey, callback: (value: any) => void): void => {
     if (change_listeners[key]) {
         // filter out the callback from the listeners
         change_listeners[key] = change_listeners[key].filter(cb => cb !== callback);
     }
 }
 
-const notify_config_change = (key: keyof typeof DEFAULTS, value: any): void => {
+const notify_config_change = (key: ConfigKey, value: any): void => {
     if (change_listeners[key]) {
         change_listeners[key].forEach(callback => callback(value));
     }
@@ -51,7 +53,7 @@ const notify_config_change = (key: keyof typeof DEFAULTS, value: any): void => {
  * Get a configuration value from the config file, or the default value if it does not exist.
  * @param key the key of the configuration value to get
  */
-export const get_config = async (key: keyof typeof DEFAULTS): Promise<any> => {
+export const get_config = async (key: ConfigKey): Promise<any> => {
     if (!await exists(CONFIG_FILE)) {
         // write default config and return the default value
         await writeTextFile(CONFIG_FILE, JSON.stringify(DEFAULTS, null, 4));
@@ -72,7 +74,7 @@ export const get_config = async (key: keyof typeof DEFAULTS): Promise<any> => {
  * @param key the key of the configuration value to set
  * @param value the value to set
  */
-export const set_config = async (key: keyof typeof DEFAULTS, value: any): Promise<void> => {
+export const set_config = async (key: ConfigKey, value: any): Promise<void> => {
     let config: Record<string, any>;
 
     if (await exists(CONFIG_FILE)) {
@@ -93,8 +95,8 @@ export const set_config = async (key: keyof typeof DEFAULTS, value: any): Promis
  * @param key the key of the configuration value to get and set
  * @return a tuple containing the current value and a function to set the value
  */
-export const useConfigValue = (key: keyof typeof DEFAULTS): [any, (value: any) => Promise<void>] => {
-    const [value, setValue] = useState<any>(null);
+export const useConfigValue = (key: ConfigKey): [any, (value: any) => Promise<void>] => {
+    const [value, setValue] = useState<any>(DEFAULTS[key]);
 
     useEffect(() => {
         // set initial value on mount
