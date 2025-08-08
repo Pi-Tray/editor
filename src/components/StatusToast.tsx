@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {useWebSocket, useWebSocketReadyStateChange} from "../contexts/WSProvider.tsx";
+import {useWebSocket, useWebSocketReadyStateChange} from "../contexts/WSProvider";
 
 import {motion} from "motion/react";
 

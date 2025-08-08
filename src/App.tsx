@@ -1,5 +1,9 @@
 import "./App.css";
 
+import {WSProvider} from "./contexts/WSProvider";
+import {useConfigValue} from "./util/config";
+
+import {AnimatedRouter} from "./components/AnimatedRouter";
 import {LeftNav} from "./components/LeftNav";
 import {StatusToast} from "./components/StatusToast";
 
@@ -8,10 +12,8 @@ import {GridEditorPage} from "./pages/GridEditorPage";
 import {PluginManagerPage} from "./pages/PluginManagerPage";
 import {AssetManagerPage} from "./pages/AssetManagerPage";
 import {SettingsPage} from "./pages/SettingsPage";
-import {AnimatedRouter} from "./components/AnimatedRouter";
 import {DevToolsPage} from "./pages/DevToolsPage";
-import {WSProvider} from "./contexts/WSProvider.tsx";
-import {useConfigValue} from "./util/config.ts";
+import {DevToolsWebsocketPage} from "./pages/DevToolsPage/DevToolsWebsocketPage";
 
 /**
  * A wrapper component that conditionally renders the WebSocket provider based on the provided URL.<br>
@@ -52,6 +54,7 @@ const App = () => {
                             "/assets": <AssetManagerPage/>,
                             "/settings": <SettingsPage/>,
                             "/devtools": <DevToolsPage/>,
+                            "/devtools/websocket": <DevToolsWebsocketPage/>,
                         }}
 
                         not_found={<NotFound/>}
