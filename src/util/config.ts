@@ -1,4 +1,4 @@
-import {exists, writeTextFile, readTextFile} from "@tauri-apps/plugin-fs";
+import {exists, writeTextFile, readTextFile, watch} from "@tauri-apps/plugin-fs";
 import { join, dataDir } from '@tauri-apps/api/path';
 
 import { useEffect, useState } from "react";
@@ -16,6 +16,11 @@ const DEFAULTS = {
 export type ConfigKey = keyof typeof DEFAULTS;
 
 const change_listeners: Partial<Record<ConfigKey, ((value: any) => void)[]>> = {};
+
+// write the default config file if it does not exist
+if (!await exists(CONFIG_FILE)) {
+    await writeTextFile(CONFIG_FILE, JSON.stringify(DEFAULTS, null, 4));
+}
 
 /**
  * Subscribe to changes in a configuration value.<br>
@@ -126,4 +131,27 @@ export const useConfigValue = (key: ConfigKey): [any, (value: any) => Promise<vo
     return [value, setKeyValue];
 }
 
-(globalThis as any).set_config = set_config;
+// load the config file into a last known state
+// TODO: convert this so that it's a cache for get_config
+let last_config: Record<string, any> = {};
+if (await exists(CONFIG_FILE)) {
+    last_config = JSON.parse(await readTextFile(CONFIG_FILE));
+}
+
+// watch for changes to the config file and update the state accordingly, calling set_config if the value changes for a key
+await watch(CONFIG_FILE, async (event) => {
+    if (typeof event.type === "object" && "modify" in event.type) {
+        const new_config = JSON.parse(await readTextFile(CONFIG_FILE));
+
+        // check for changes in the config file
+        for (const key in new_config) {
+            if (new_config[key] !== last_config[key]) {
+                // if the value has changed, notify listeners
+                notify_config_change(key as ConfigKey, new_config[key]);
+            }
+        }
+
+        // update the last known state
+        last_config = new_config;
+    }
+});

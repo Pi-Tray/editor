@@ -28,7 +28,7 @@ const ConditionalWSProvider = ({children, url}: { children: React.ReactNode, url
     }
 
     return (
-        <WSProvider url={url}>
+        <WSProvider url={url} key={`ws-provider-${url}`}>
             {children}
         </WSProvider>
     );

@@ -36,7 +36,7 @@ export const WSProvider = ({ url, children, max_backoff_ms = DEFAULT_MAX_BACKOFF
         const ws = new WebSocket(url);
 
         ws.onopen = () => {
-            console.log("WebSocket connection established");
+            console.log(`WebSocket connection established to ${url}`);
 
             // reset backoff on successful connection
             reconnect_attempts.current = 0;
@@ -60,9 +60,18 @@ export const WSProvider = ({ url, children, max_backoff_ms = DEFAULT_MAX_BACKOFF
 
                 console.log(`Reconnecting in ${delay}ms...`);
 
-                backoff_timeout.current = setTimeout(() => {
-                    connect();
-                }, delay);
+                // create timeout in a closure to ensure the scheduled URL is still the same when the timeout executes
+                // TODO: is this a hack? is there a better way to do this? it seems to work fine but
+                //  it does fire off one more attempt than necessary seemingly, but doesnt affect the ui state like it was before
+                ((scheduled_url) => {
+                    backoff_timeout.current = setTimeout(() => {
+                        if (scheduled_url !== url) {
+                            console.log(`Skipping reconnection to ${scheduled_url} because the URL has changed.`);
+                        }
+
+                        connect();
+                    }, delay);
+                })(url);
             }
         };
 
@@ -84,6 +93,7 @@ export const WSProvider = ({ url, children, max_backoff_ms = DEFAULT_MAX_BACKOFF
 
             if (socket) {
                 socket.close();
+                setSocket(null);
             }
 
             if (backoff_timeout.current) {
