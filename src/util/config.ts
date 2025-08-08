@@ -9,7 +9,8 @@ const CONFIG_FILE = await join(appdata, "pi-tray", "editor.json");
 // explicitly declare something as undefined here is you don't want to set a default value
 // we are using the keys of defaults as types for the config getters and setters so it needs to be declared here
 const DEFAULTS = {
-    devtools: false
+    devtools: false,
+    ws_url: null
 };
 
 export type ConfigKey = keyof typeof DEFAULTS;

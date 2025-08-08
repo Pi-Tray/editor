@@ -11,13 +11,35 @@ import {SettingsPage} from "./pages/SettingsPage";
 import {AnimatedRouter} from "./components/AnimatedRouter";
 import {DevToolsPage} from "./pages/DevToolsPage";
 import {WSProvider} from "./contexts/WSProvider.tsx";
+import {useConfigValue} from "./util/config.ts";
 
-// TODO: make this configurable, maybe read from a file written by the server
-const WS_URL = "ws://localhost:8080";
+/**
+ * A wrapper component that conditionally renders the WebSocket provider based on the provided URL.<br>
+ * If the URL is `null`, it will not render the provider and simply return the children.<br>
+ * This signals to children components using `WSProvider` hooks that no URL has been configured by the user yet.
+ * @param children the children to render inside the provider
+ * @param url the WebSocket URL to connect to, or `null` if no URL is configured
+ * @constructor
+ */
+const ConditionalWSProvider = ({children, url}: { children: React.ReactNode, url: string | null }) => {
+    if (url === null) {
+        // if no WS_URL is provided, don't render the provider
+        return <>{children}</>;
+    }
+
+    return (
+        <WSProvider url={url}>
+            {children}
+        </WSProvider>
+    );
+}
 
 const App = () => {
+    // TODO: this needs to watch file changes so the server process can tell the editor where it is
+    const [ws_url] = useConfigValue("ws_url");
+
     return (
-        <WSProvider url={WS_URL}>
+        <ConditionalWSProvider url={ws_url}>
             <div className="font-dm-sans flex h-screen max-h-screen bg-base-100 select-none">
                 <LeftNav/>
                 <main className="py-4 px-6 w-full h-full">
@@ -43,10 +65,10 @@ const App = () => {
                     />
                 </main>
 
-                {/* use a key to force remounting the component when the WS_URL changes to reset its internal state */}
-                <StatusToast key={`status-${WS_URL}`} />
+                {/* use a key to force remounting the component when the websocket url changes to reset its internal state */}
+                <StatusToast key={`status-${ws_url}`} />
             </div>
-        </WSProvider>
+        </ConditionalWSProvider>
     );
 }
 
