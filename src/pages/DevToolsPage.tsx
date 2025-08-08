@@ -1,6 +1,6 @@
 import {Link} from "wouter";
 
-import {Logs, ToyBrick} from "lucide-react";
+import {Cable, Logs, ToyBrick} from "lucide-react";
 
 const SPLASH_TEXTS = [
     "What will it be today, my friend?",
@@ -77,8 +77,9 @@ export const DevToolsPage = () => {
 
             <div className="flex flex-col items-center justify-between my-11 flex-1">
                 <div className="flex flex-wrap gap-6 items-center justify-center">
-                    <DevToolsChoice href="/devtools/plugins" title="Plugins" description="Test your plugins!" IconComponent={ToyBrick} />
-                    <DevToolsChoice href="/devtools/logs" title="Logs" description="Figure out why something isn't right..." IconComponent={Logs} />
+                    <DevToolsChoice href="/devtools/plugins" title="Plugins" description="Let's check your work before you show the class." IconComponent={ToyBrick} />
+                    <DevToolsChoice href="/devtools/logs" title="Logs" description="Where your code goes to confess..." IconComponent={Logs} />
+                    <DevToolsChoice href="/devtools/websocket" title="WebSocket Tester" description="Like texting, except you actually get a reply!" IconComponent={Cable} />
                 </div>
 
                 <p className="text-center w-full font-bold whitespace-pre-line text-balance">
