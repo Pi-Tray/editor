@@ -27,6 +27,8 @@ const ConditionalWSProvider = ({children, url}: { children: React.ReactNode, url
         return <>{children}</>;
     }
 
+    // use key to prevent leftover state from previous connections
+    // TODO: make the state in WSProvider stable so this isn't needed as this causes a full rerender of the page
     return (
         <WSProvider url={url} key={`ws-provider-${url}`}>
             {children}
