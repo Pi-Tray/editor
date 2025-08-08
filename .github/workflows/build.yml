@@ -20,7 +20,7 @@ jobs:
             args: "--target x86_64-apple-darwin"
           - platform: "ubuntu-22.04"
             args: ""
-          - platform: "windows-latest"
+          - platform: "windows-latest" # TODO: set up cross compilation to produce nsis on ubuntu
             args: ""
 
     runs-on: ${{ matrix.platform }}
@@ -108,5 +108,5 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: tauri-app-${{ matrix.platform }}-${{ matrix.args || 'default' }}-${{ steps.tauri-build.outputs.appVersion }}
+          name: pi-tray-editor-${{ matrix.platform }}-${{ matrix.args || 'default' }}-${{ steps.tauri-build.outputs.appVersion }}
           path: ${{ steps.prep_paths.outputs.paths }}
