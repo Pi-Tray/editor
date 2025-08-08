@@ -1,22 +1,44 @@
-import {useWebsocketStatus} from "../hooks/useWebsocketStatus";
+import {useState} from "react";
+import {useWebSocketReadyStateChange} from "../contexts/WSProvider.tsx";
 
 import {motion} from "motion/react";
 
 export const StatusToast = () => {
-    const status = useWebsocketStatus("ws://192.168.137.1:8080");
+    // shows the latest "stable" status
+    // i.e. it only shows connecting the first time it's trying to connect, and then shows open/closed until the next update
+    // this is because exponential backoff is used for reconnecting, which will make the ws alternate between connecting and closed states,
+    // which is not very useful to show in the ui
 
-    let text = "Connecting...";
-    let status_class = "status-neutral";
-    let show_pinger = true;
+    const [displayed_status, setDisplayedStatus] = useState<WebSocket["readyState"]>(WebSocket.CONNECTING);
 
-    if (status === WebSocket.OPEN) {
-        text = "Running";
-        status_class = "status-success";
-        show_pinger = false;
-    } else if (status === WebSocket.CLOSED || status === WebSocket.CLOSING) {
-        text = "Stopped";
-        status_class = "status-error";
-        show_pinger = true;
+    useWebSocketReadyStateChange((new_status: WebSocket["readyState"]) => {
+        if (new_status === WebSocket.OPEN || new_status === WebSocket.CLOSED) {
+            setDisplayedStatus(new_status);
+        }
+    });
+
+    let text;
+    let status_class;
+    let show_pinger;
+
+    switch (displayed_status) {
+        case WebSocket.OPEN:
+            text = "Running";
+            status_class = "status-success";
+            show_pinger = false;
+            break;
+        case WebSocket.CLOSED:
+        case WebSocket.CLOSING:
+            text = "Stopped";
+            status_class = "status-error";
+            show_pinger = true;
+            break;
+        case WebSocket.CONNECTING:
+        default:
+            text = "Connecting...";
+            status_class = "status-neutral";
+            show_pinger = true;
+            break;
     }
 
     return (

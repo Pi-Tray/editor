@@ -10,37 +10,44 @@ import {AssetManagerPage} from "./pages/AssetManagerPage";
 import {SettingsPage} from "./pages/SettingsPage";
 import {AnimatedRouter} from "./components/AnimatedRouter";
 import {DevToolsPage} from "./pages/DevToolsPage";
+import {WSProvider} from "./contexts/WSProvider.tsx";
+
+// TODO: make this configurable, maybe read from a file written by the server
+const WS_URL = "ws://localhost:8080";
 
 const App = () => {
     return (
-        <div className="font-dm-sans flex h-screen max-h-screen bg-base-100 select-none">
-            <LeftNav/>
-            <main className="py-4 px-6 w-full h-full">
-                <AnimatedRouter
-                    routes={{
-                        "/": <GridEditorPage/>,
-                        "/plugins": <PluginManagerPage/>,
-                        "/assets": <AssetManagerPage/>,
-                        "/settings": <SettingsPage/>,
-                        "/devtools": <DevToolsPage />,
-                    }}
+        <WSProvider url={WS_URL}>
+            <div className="font-dm-sans flex h-screen max-h-screen bg-base-100 select-none">
+                <LeftNav/>
+                <main className="py-4 px-6 w-full h-full">
+                    <AnimatedRouter
+                        routes={{
+                            "/": <GridEditorPage/>,
+                            "/plugins": <PluginManagerPage/>,
+                            "/assets": <AssetManagerPage/>,
+                            "/settings": <SettingsPage/>,
+                            "/devtools": <DevToolsPage/>,
+                        }}
 
-                    not_found={<NotFound/>}
+                        not_found={<NotFound/>}
 
-                    animation_props={{
-                        initial: {opacity: 0},
-                        animate: {opacity: 1},
-                        exit: {opacity: 0},
-                        transition: {duration: 0.25, ease: "easeInOut"},
+                        animation_props={{
+                            initial: {opacity: 0},
+                            animate: {opacity: 1},
+                            exit: {opacity: 0},
+                            transition: {duration: 0.25, ease: "easeInOut"},
 
-                        className: "h-full w-full"
-                    }}
-                />
-            </main>
+                            className: "h-full w-full"
+                        }}
+                    />
+                </main>
 
-            <StatusToast/>
-        </div>
-    )
+                {/* use a key to force remounting the component when the WS_URL changes to reset its internal state */}
+                <StatusToast key={`status-${WS_URL}`} />
+            </div>
+        </WSProvider>
+    );
 }
 
 export default App;
