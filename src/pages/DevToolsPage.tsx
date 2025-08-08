@@ -1,3 +1,5 @@
+import {Link} from "wouter";
+
 import {Logs, ToyBrick} from "lucide-react";
 
 const SPLASH_TEXTS = [
@@ -59,7 +61,7 @@ const DevToolsChoice = ({href, title, description, IconComponent}: DevToolsChoic
 
                 <div className="w-full flex flex-col items-center">
                     <div className="divider m-2" />
-                    <a href={href} className="btn btn-primary w-7/10">Go!</a>
+                    <Link href={href} className="btn btn-primary w-7/10">Go!</Link>
                 </div>
             </div>
         </div>

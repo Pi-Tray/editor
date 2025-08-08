@@ -54,8 +54,6 @@ const LeftNavItem = ({href, title, icon, className = "", link_className = "", ma
 export const LeftNav = () => {
     const [show_devtools] = useConfigValue("devtools");
 
-    // TODO: animation plays when devtools navitem repaints (e.g. when visitng nested devtools pages). could patch by checking if on the settings page as a hack?
-
     return (
       <ul className="menu h-full bg-base-300">
           <LeftNavItem href="/" title="Grid Editor" icon={<LayoutGrid />} />
