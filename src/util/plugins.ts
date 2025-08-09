@@ -108,6 +108,29 @@ export const install_package = async (package_ref: string) => {
     }
 }
 
+/**
+ * Uses the sidecar binary to list the plugins in a given package.
+ * @param package_name the name of the package to list plugins from e.g. @pi-tray/builtin
+ * @param fully_qualify whether to prepend the package name to each plugin name (default: true)
+ */
+export const list_plugins_in_package = async (package_name: string, fully_qualify = true): Promise<string[]> => {
+    const command = Command.sidecar("binaries/sidecar", ["list-plugins", package_name]);
+    const result = await command.execute();
+
+    if (result.code !== 0) {
+        console.error("Failed to list plugins in package:", package_name, result);
+        throw new Error(`Failed to list plugins in package: ${package_name}`);
+    }
+
+    const plugins = JSON.parse(result.stdout.trim());
+
+    if (fully_qualify) {
+        return plugins.map((plugin: string) => `${package_name}/${plugin}`);
+    } else {
+        return plugins;
+    }
+}
+
 // TODO: observe node_modules or package-lock.json so then we know when updates are happened and the plugin list needs to be rescanned. ideally supporting any manager but npm gets priority
 await watch(package_json, async () => {
     console.log("package.json changed, notifying listeners...");

@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build-ts": "tsc",
-    "build": "tsc && pkg dist/index.js --output target/app"
+    "build": "tsc && pkg dist/index.js --output target/sidecar",
+    "relocate": "node bin/relocate.mjs"
   },
   "author": "obfuscatedgenerated",
   "license": "MIT",

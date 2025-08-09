@@ -74,6 +74,16 @@
             }
           ],
           "sidecar": false
+        },
+        {
+          "name": "binaries/sidecar",
+          "args": [
+            "list-plugins",
+            {
+              "validator": "\\S+"
+            }
+          ],
+          "sidecar": true
         }
       ]
     },

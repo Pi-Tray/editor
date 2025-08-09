@@ -25,22 +25,22 @@ switch (command) {
     case "list-plugins":
         // lists the plugins inside a given package
 
-        const pkg_ref = process.argv[3];
-        if (!pkg_ref) {
-            console.error("Usage: sidecar list-plugins <package-ref>");
+        const pkg_name = process.argv[3];
+        if (!pkg_name) {
+            console.error("Usage: sidecar list-plugins <package-name>");
             process.exit(1);
         }
 
         const pkg_require = createRequire(in_plugin_env("package.json"));
         try {
-            const pkg = pkg_require(pkg_ref);
+            const pkg = pkg_require(pkg_name);
             if (pkg) {
                 console.log(JSON.stringify(Object.keys(pkg)));
             } else {
-                console.log(`No plugins found in ${pkg_ref}.`);
+                console.log(`No plugins found in ${pkg_name}.`);
             }
         } catch (error) {
-            console.error(`Error loading package ${pkg_ref}:`, error);
+            console.error(`Error loading package ${pkg_name}:`, error);
             process.exit(1);
         }
 
