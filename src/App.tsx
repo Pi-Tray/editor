@@ -1,5 +1,9 @@
 import "./App.css";
 
+import {useEffect, useCallback} from "react";
+
+import {useLocation} from "wouter";
+
 import {WSProvider} from "./contexts/WSProvider";
 import {useConfigValue} from "./util/config";
 
@@ -14,6 +18,9 @@ import {AssetManagerPage} from "./pages/AssetManagerPage";
 import {SettingsPage} from "./pages/SettingsPage";
 import {DevToolsPage} from "./pages/DevToolsPage";
 import {DevToolsWebsocketPage} from "./pages/DevToolsPage/DevToolsWebsocketPage";
+
+import {onOpenUrl} from "@tauri-apps/plugin-deep-link";
+import {getCurrentWindow} from "@tauri-apps/api/window";
 
 /**
  * A wrapper component that conditionally renders the WebSocket provider based on the provided URL.<br>
@@ -39,8 +46,50 @@ const ConditionalWSProvider = ({children, url}: { children: React.ReactNode, url
 }
 
 const App = () => {
-    // TODO: this needs to watch file changes so the server process can tell the editor where it is
+    const [_location, navigate] = useLocation();
     const [ws_url] = useConfigValue("ws_url");
+
+    const handle_deep_link = useCallback(
+        async (url_str: string) => {
+            console.log("Handling deep link:", url_str);
+
+            // bring window to the front
+            await getCurrentWindow().setFocus();
+
+            const url = new URL(url_str);
+
+            // command is first part of path (which is actually treated as the host)
+            const command = url.hostname;
+
+            // arguments are split path segments
+            const fragments = url.pathname.split("/").filter(Boolean);
+
+            console.log(`Command: ${command}, Fragments: ${fragments}`);
+
+            switch (command) {
+                case "page": {
+                    // navigate to the page specified in the deep link
+                    const page = fragments.join("");
+                    console.log(`Navigating to page: ${page}`);
+                    navigate(`/${page}`);
+                    break;
+                }
+            }
+        },
+        [navigate]
+    );
+
+    // listen for deep links and handle accordingly
+    useEffect(() => {
+        const unlisten = onOpenUrl(urls => {
+            handle_deep_link(urls[0]);
+        });
+
+        return () => {
+            // unwrap promise and call the unlisten function
+            unlisten.then(call => call());
+        };
+    }, [handle_deep_link]);
 
     return (
         <ConditionalWSProvider url={ws_url}>

@@ -7,15 +7,25 @@
   ],
   "permissions": [
     "core:default",
+    "core:window:allow-set-focus",
     "opener:default",
     "fs:default",
     {
       "identifier": "fs:write-all",
-      "allow": [{ "path": "$DATA/pi-tray/*" }]
+      "allow": [
+        {
+          "path": "$DATA/pi-tray/*"
+        }
+      ]
     },
     {
       "identifier": "fs:read-all",
-      "allow": [{ "path": "$DATA/pi-tray/*" }]
-    }
+      "allow": [
+        {
+          "path": "$DATA/pi-tray/*"
+        }
+      ]
+    },
+    "deep-link:default"
   ]
 }
