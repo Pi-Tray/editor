@@ -14,7 +14,7 @@ const package_json = await join(plugin_env, "package.json");
  * Lists the package names of installed plugins by reading the `package.json` file in the plugin-env directory.
  * @returns array of installed plugin package names
  */
-export const list_installed_plugins = async (): Promise<string[]> => {
+export const list_installed_packages = async (): Promise<string[]> => {
     try {
         const text = await readTextFile(package_json);
         const data = JSON.parse(text);
@@ -34,50 +34,49 @@ export const list_installed_plugins = async (): Promise<string[]> => {
 const change_listeners = new Set<() => void>();
 
 /**
- * Subscribe to changes in the list of installed plugins.<br>
- * This will notify the callback whenever plugin-env's `package.json` file changes, indicating a change in the installed plugins.
- * @param callback the callback to call when the list of installed plugins changes
+ * Subscribe to changes in the list of installed packages.<br>
+ * This will notify the callback whenever plugin-env's `package.json` file changes, indicating a change in the installed packages.
+ * @param callback the callback to call when the list of installed packages changes
  */
-export const subscribe_to_plugin_list_change = (callback: () => void): void => {
+export const subscribe_to_package_list_change = (callback: () => void): void => {
     change_listeners.add(callback);
 }
 
 /**
- * Unsubscribe from changes in the list of installed plugins.
- * @param callback a reference equivalent to the callback passed to `subscribe_to_plugin_list_change`
+ * Unsubscribe from changes in the list of installed packages.
+ * @param callback a reference equivalent to the callback passed to `subscribe_to_package_list_change`
  */
-export const unsubscribe_from_plugin_list_change = (callback: () => void): void => {
+export const unsubscribe_from_package_list_change = (callback: () => void): void => {
     change_listeners.delete(callback);
 }
 
-const notify_plugin_list_change = (): void => {
+const notify_package_list_change = (): void => {
     change_listeners.forEach(callback => callback());
 }
 
 /**
- * A React hook that provides the list of installed plugins.<br>
- * It fetches the list of installed plugins from the `package.json` file in the plugin-env directory and updates whenever the file changes.
+ * A React hook that provides the list of installed packages in plugin-env.
  * @returns array of installed plugin package names
  */
-export const usePluginList = () => {
-    const [plugins, setPlugins] = useState<string[]>([]);
+export const usePackageList = () => {
+    const [packages, setPackages] = useState<string[]>([]);
 
     useEffect(() => {
-        const fetch_plugins = async () => {
-            setPlugins(await list_installed_plugins());
+        const fetch_packages = async () => {
+            setPackages(await list_installed_packages());
         };
 
-        fetch_plugins();
+        fetch_packages();
 
-        const listener = () => fetch_plugins();
-        subscribe_to_plugin_list_change(listener);
+        const listener = () => fetch_packages();
+        subscribe_to_package_list_change(listener);
 
         return () => {
-            unsubscribe_from_plugin_list_change(listener);
+            unsubscribe_from_package_list_change(listener);
         };
     }, []);
 
-    return plugins;
+    return packages;
 }
 
 /**
@@ -109,7 +108,8 @@ export const install_package = async (package_ref: string) => {
     }
 }
 
+// TODO: observe node_modules or package-lock.json so then we know when updates are happened and the plugin list needs to be rescanned. ideally supporting any manager but npm gets priority
 await watch(package_json, async () => {
     console.log("package.json changed, notifying listeners...");
-    notify_plugin_list_change();
+    notify_package_list_change();
 });
