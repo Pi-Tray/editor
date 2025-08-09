@@ -10,7 +10,8 @@ const CONFIG_FILE = await join(appdata, "pi-tray", "editor.json");
 // we are using the keys of defaults as types for the config getters and setters so it needs to be declared here
 const DEFAULTS = {
     devtools: false,
-    ws_url: null
+    ws_url: null,
+    dont_overwrite_ws_url: false,
 };
 
 export type ConfigKey = keyof typeof DEFAULTS;
