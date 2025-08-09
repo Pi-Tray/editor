@@ -9,6 +9,7 @@
     "core:default",
     "core:window:allow-set-focus",
     "opener:default",
+    "deep-link:default",
     "fs:default",
     {
       "identifier": "fs:write-all",
@@ -26,6 +27,56 @@
         }
       ]
     },
-    "deep-link:default"
+    "shell:default",
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "name": "npm-install",
+          "cmd": "npm",
+          "args": [
+            "install",
+            {
+              "validator": "\\S+"
+            }
+          ],
+          "sidecar": false
+        },
+        {
+          "name": "npm-uninstall",
+          "cmd": "npm",
+          "args": [
+            "uninstall",
+            {
+              "validator": "\\S+"
+            }
+          ],
+          "sidecar": false
+        },
+        {
+          "name": "npm-install-windows",
+          "cmd": "cmd.exe",
+          "args": [
+            "/c",
+            {
+              "validator": "npm install \\S+"
+            }
+          ],
+          "sidecar": false
+        },
+        {
+          "name": "npm-uninstall-windows",
+          "cmd": "cmd.exe",
+          "args": [
+            "/c",
+            {
+              "validator": "npm uninstall \\S+"
+            }
+          ],
+          "sidecar": false
+        }
+      ]
+    },
+    "os:default"
   ]
 }

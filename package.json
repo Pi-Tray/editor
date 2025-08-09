@@ -17,6 +17,8 @@
     "@tauri-apps/plugin-deep-link": "^2.4.1",
     "@tauri-apps/plugin-fs": "^2.4.1",
     "@tauri-apps/plugin-opener": "^2",
+    "@tauri-apps/plugin-os": "^2.3.0",
+    "@tauri-apps/plugin-shell": "^2.3.0",
     "daisyui": "^5.0.50",
     "lucide-react": "^0.536.0",
     "motion": "^12.23.12",

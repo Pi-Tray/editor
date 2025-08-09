@@ -2,6 +2,8 @@ import {useEffect, useState} from "react";
 
 import {dataDir, join} from "@tauri-apps/api/path";
 import {readTextFile, watch} from "@tauri-apps/plugin-fs";
+import {Command} from "@tauri-apps/plugin-shell";
+import {platform} from "@tauri-apps/plugin-os";
 
 const appdata = await dataDir();
 
@@ -76,6 +78,35 @@ export const usePluginList = () => {
     }, []);
 
     return plugins;
+}
+
+/**
+ * Installs a package in the plugin-env directory by executing `npm install <package_ref>`.
+ * @param package_ref the package reference to install, such as a name or git url
+ */
+export const install_package = async (package_ref: string) => {
+    let command: Command<string>;
+
+    if (platform() === "windows") {
+        // windows command resolution is bonkers, so this is actually a harshly restricted call to cmd.exe
+        command = Command.create("npm-install-windows", ["/c", `npm install ${package_ref}`], {
+            cwd: plugin_env,
+        });
+    } else {
+        command = Command.create("npm-install", ["install", package_ref], {
+            cwd: plugin_env,
+        });
+    }
+
+    const result = await command.execute();
+
+    if (result.code !== 0) {
+        console.error("Failed to install package:", package_ref, result);
+        throw new Error(`Failed to install package: ${package_ref}`);
+    } else {
+        console.log("Package installed successfully:", package_ref);
+        //notify_plugin_list_change(); // not necessary, the watcher will handle this
+    }
 }
 
 await watch(package_json, async () => {
