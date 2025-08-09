@@ -1,5 +1,5 @@
 import {exists, writeTextFile, readTextFile, watch} from "@tauri-apps/plugin-fs";
-import { join, dataDir } from '@tauri-apps/api/path';
+import { join, dataDir } from "@tauri-apps/api/path";
 
 import { useEffect, useState } from "react";
 
@@ -16,12 +16,12 @@ const DEFAULTS = {
 
 export type ConfigKey = keyof typeof DEFAULTS;
 
-const change_listeners: Partial<Record<ConfigKey, ((value: any) => void)[]>> = {};
-
 // write the default config file if it does not exist
 if (!await exists(CONFIG_FILE)) {
     await writeTextFile(CONFIG_FILE, JSON.stringify(DEFAULTS, null, 4));
 }
+
+const change_listeners: Partial<Record<ConfigKey, ((value: any) => void)[]>> = {};
 
 /**
  * Subscribe to changes in a configuration value.<br>
