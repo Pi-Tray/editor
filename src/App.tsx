@@ -21,6 +21,7 @@ import {DevToolsWebsocketPage} from "./pages/DevToolsPage/DevToolsWebsocketPage"
 
 import {onOpenUrl} from "@tauri-apps/plugin-deep-link";
 import {getCurrentWindow} from "@tauri-apps/api/window";
+import {install_package} from "./util/plugins.ts";
 
 /**
  * A wrapper component that conditionally renders the WebSocket provider based on the provided URL.<br>
@@ -67,13 +68,46 @@ const App = () => {
             console.log(`Command: ${command}, Fragments: ${fragments}`);
 
             switch (command) {
-                case "page": {
+                case "page":
                     // navigate to the page specified in the deep link
                     const page = fragments.join("");
                     console.log(`Navigating to page: ${page}`);
                     navigate(`/${page}`);
                     break;
-                }
+                case "express":
+                    // lookup the plugin name from the express install list
+                    // if its not present, dont attempt to install it for security reasons
+                    // other plugins should be installed through the plugin manager instead to make it more intentional
+
+                    const name = fragments.join("/");
+                    const express_list = await fetch("https://raw.githubusercontent.com/Pi-Tray/express-list/refs/heads/main/express.json");
+
+                    if (!express_list.ok) {
+                        console.error("Failed to fetch express list:", express_list.statusText);
+                        return;
+                    }
+
+                    const express_data = await express_list.json();
+                    if (!express_data[name]) {
+                        console.error(`Plugin "${name}" not found in express list.`);
+                        return;
+                    }
+
+                    // TODO: show user that this is happening
+
+                    // install the plugin
+                    // TODO: use proper toasts
+                    try {
+                        const package_ref = express_data[name];
+                        console.log(`Installing plugin from express list: ${name} (${package_ref})`);
+                        await install_package(package_ref);
+                        alert(`Plugin "${name}" installed successfully!`);
+                    } catch (error) {
+                        console.error("Failed to install plugin from express list:", error);
+                        alert(`Failed to install plugin "${name}". Check the console for details.`);
+                    }
+
+                    break;
             }
         },
         [navigate]
