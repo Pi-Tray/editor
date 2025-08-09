@@ -11,7 +11,7 @@ const CONFIG_FILE = await join(appdata, "pi-tray", "editor.json");
 const DEFAULTS = {
     devtools: false,
     ws_url: null,
-    dont_overwrite_ws_url: false,
+    dont_overwrite_ws_url: false, // TODO: this causes a lot of double negatives i.e. !dont_overwrite_ws_url, should it be renamed and inverted?
 };
 
 export type ConfigKey = keyof typeof DEFAULTS;

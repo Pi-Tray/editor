@@ -5,13 +5,29 @@ interface BaseSettingProps {
     label: string;
     tooltip?: string;
     config_key: ConfigKey;
+    className? : string;
+    disabled? : boolean;
 }
 
-const ToggleSetting = ({label, config_key, tooltip}: BaseSettingProps) => {
+interface ToggleSettingProps extends BaseSettingProps {
+    invert?: boolean;
+}
+
+/**
+ * A control to toggle a boolean config key.
+ * @param label the label to display next to the control
+ * @param config_key the config key to read and set
+ * @param tooltip an optional tooltip to show when hovering the control
+ * @param invert if true, will set the config value as false when toggled on, and true when toggled off (default: false)
+ * @param className additional class names to apply to the element
+ * @param disabled whether the input should show as disabled (default: false)
+ * @constructor
+ */
+const ToggleSetting = ({label, config_key, tooltip, invert, className = "", disabled = false}: ToggleSettingProps) => {
     const [value, setValue] = useConfigValue(config_key);
 
     return (
-        <label className="label">
+        <label className={`label ${className}`}>
             {label}
 
             <input
@@ -20,10 +36,12 @@ const ToggleSetting = ({label, config_key, tooltip}: BaseSettingProps) => {
 
                 title={tooltip}
 
-                checked={value}
+                checked={invert ? !value : value}
                 onChange={
-                    (e) => setValue(e.target.checked)
+                    (e) => setValue(invert ? !e.target.checked : e.target.checked)
                 }
+
+                disabled={disabled}
             />
         </label>
     );
@@ -38,7 +56,21 @@ interface TextSettingProps extends BaseSettingProps {
     pattern?: string;
 }
 
-const TextSetting = ({label, config_key, button_text, type, placeholder, pattern, validate, tooltip}: TextSettingProps) => {
+/**
+ * A control to set a string config value.
+ * @param label the label to display next to the control
+ * @param config_key the config key to read and set
+ * @param tooltip an optional tooltip to show when hovering the control
+ * @param placeholder optional placeholder text to show when the input is empty
+ * @param button_text text to show in the save button (default: "Apply")
+ * @param type the type of the input form, e.g. "text", "number", "email" (default: "text")
+ * @param pattern optional validation pattern to use for the input field
+ * @param validate optional custom validation function, returning the error as a string, or "" if validation is successful
+ * @param className additional class names to apply to the element
+ * @param disabled whether the input should show as disabled (default: false)
+ * @constructor
+ */
+const TextSetting = ({label, config_key, tooltip, placeholder,  button_text = "Apply", type = "text", pattern, validate, className = "", disabled = false}: TextSettingProps) => {
     const [config_value, setConfigValue] = useConfigValue(config_key);
     const [input_value, setInputValue] = useState(config_value || "");
 
@@ -68,14 +100,14 @@ const TextSetting = ({label, config_key, button_text, type, placeholder, pattern
     );
 
     return (
-        <div className="flex gap-2 items-center">
+        <div className={`flex gap-2 items-center ${className}`}>
             <label className="label">
                 {label}
 
                 <input
                     ref={input_ref}
 
-                    type={type || "text"}
+                    type={type}
                     className="input input-bordered w-full max-w-xs"
                     placeholder={placeholder}
 
@@ -91,21 +123,30 @@ const TextSetting = ({label, config_key, button_text, type, placeholder, pattern
                     }
 
                     pattern={pattern}
+
+                    disabled={disabled}
                 />
             </label>
 
-            <button className="btn btn-primary"
-                    onClick={() => {
+            <button
+                className="btn btn-primary"
+                onClick={
+                    () => {
                         validate_and_set(input_value);
                     }
-            }>
-                {button_text || "Apply"}
+                }
+                disabled={disabled}
+            >
+                {button_text}
             </button>
         </div>
     );
 }
 
 export const SettingsPage = () => {
+    const [ws_url_overridden] = useConfigValue("dont_overwrite_ws_url");
+    const ws_url_locked = !ws_url_overridden;
+
     const validate_ws_url = useCallback(
         (value: string) => {
             try {
@@ -135,24 +176,28 @@ export const SettingsPage = () => {
                     tooltip="Enable or disable the DevTools page."
                 />
 
-                <TextSetting
-                    label="WebSocket URL"
-                    config_key="ws_url"
+                <div className="flex flex-col gap-4 items-end">
+                    <TextSetting
+                        label="WebSocket URL"
+                        config_key="ws_url"
 
-                    tooltip="The address which Pi-Tray Server is listening on for WebSocket connections."
+                        tooltip="The address which Pi-Tray Server is listening on for WebSocket connections."
 
-                    type="url"
-                    validate={validate_ws_url}
-                    //pattern="^wss?://.+"
-                />
+                        type="url"
+                        validate={validate_ws_url}
+                        //pattern="^wss?://.+"
 
-                {/* TODO: should this be changed to an "override url" setting and have the url input be disabled if this option isn't enabled? */}
-                <ToggleSetting
-                    label="Lock WebSocket URL"
-                    config_key="dont_overwrite_ws_url"
+                        disabled={ws_url_locked}
+                    />
 
-                    tooltip="If enabled, the WebSocket URL will not be automatically overwritten by the server process. This is useful if you want to use force a custom URL."
-                />
+                    <ToggleSetting
+                        label="Set automatically"
+                        config_key="dont_overwrite_ws_url"
+                        invert={true}
+
+                        tooltip="If enabled, the WebSocket URL will be automatically set by the server process when it starts.&#013;Disable to prevent this behaviour and set a custom URL.&#013;The server will need to be restarted to have it update the value."
+                    />
+                </div>
             </div>
         </>
     );
