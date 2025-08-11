@@ -24,7 +24,7 @@ interface LeftNavItemProps {
  * @param className additional class names for the list item
  * @param link_className additional class names for the link
  * @param mark_if_nested whether to mark the nav item if the pathname is a nested path of the href, e.g. `/foo/bar` for `href="/foo"` (default: false)
- * @constructor
+ * @returns the element
  */
 const LeftNavItem = ({href, title, icon, className = "", link_className = "", mark_if_nested = false}: LeftNavItemProps) => {
     const pathname = usePathname();

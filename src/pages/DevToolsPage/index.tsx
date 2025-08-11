@@ -45,7 +45,7 @@ interface DevToolsChoiceProps {
  * @param title the title of the card
  * @param description an optional description of the card
  * @param IconComponent the icon component to display in the card
- * @constructor
+ * @returns the element
  */
 const DevToolsChoice = ({href, title, description, IconComponent}: DevToolsChoiceProps) => {
     return (

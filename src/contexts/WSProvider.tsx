@@ -17,7 +17,7 @@ const DEFAULT_MAX_BACKOFF_MS = 30_000; // 30 seconds
  * @param url WebSocket URL to connect to
  * @param children children components that will have access to the WebSocket context
  * @param max_backoff_ms maximum backoff time in milliseconds for reconnections (default: 30 seconds)
- * @constructor
+ * @returns the element
  */
 export const WSProvider = ({ url, children, max_backoff_ms = DEFAULT_MAX_BACKOFF_MS }: WSProviderProps) => {
     const [socket, setSocket] = useState<WebSocket | null>(null);

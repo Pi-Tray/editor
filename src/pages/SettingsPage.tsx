@@ -21,7 +21,7 @@ interface ToggleSettingProps extends BaseSettingProps {
  * @param invert if true, will set the config value as false when toggled on, and true when toggled off (default: false)
  * @param className additional class names to apply to the element
  * @param disabled whether the input should show as disabled (default: false)
- * @constructor
+ * @returns the element
  */
 const ToggleSetting = ({label, config_key, tooltip, invert, className = "", disabled = false}: ToggleSettingProps) => {
     const [value, setValue] = useConfigValue(config_key);
@@ -68,7 +68,7 @@ interface TextSettingProps extends BaseSettingProps {
  * @param validate optional custom validation function, returning the error as a string, or "" if validation is successful
  * @param className additional class names to apply to the element
  * @param disabled whether the input should show as disabled (default: false)
- * @constructor
+ * @returns the element
  */
 const TextSetting = ({label, config_key, tooltip, placeholder,  button_text = "Apply", type = "text", pattern, validate, className = "", disabled = false}: TextSettingProps) => {
     const [config_value, setConfigValue] = useConfigValue(config_key);

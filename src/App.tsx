@@ -29,7 +29,7 @@ import {install_package} from "./util/plugins.ts";
  * This signals to children components using `WSProvider` hooks that no URL has been configured by the user yet.
  * @param children the children to render inside the provider
  * @param url the WebSocket URL to connect to, or `null` if no URL is configured
- * @constructor
+ * @returns the wsprovider around the children if a url is provided, otherwise the children themselves
  */
 const ConditionalWSProvider = ({children, url}: { children: React.ReactNode, url: string | null }) => {
     if (url === null) {

@@ -15,7 +15,7 @@ interface AnimatedRouterProps {
  * @param routes an object where keys are paths and values are the corresponding route elements
  * @param not_found an optional element to render when no routes match (defaults to an empty fragment)
  * @param animation_props optional props to pass to the `motion.div` element for custom animations (but if you don't, it won't animate anything)
- * @constructor
+ * @returns the element for the current route, wrapped in `AnimatePresence` and `motion.div` for animations
  */
 export const AnimatedRouter = ({routes, not_found, animation_props = {}}: AnimatedRouterProps) => {
     const element = useRoutes(routes) || not_found || <></>;
