@@ -80,6 +80,12 @@ jobs:
         # Using 'npm ci' is faster and more reliable for CI environments
         run: npm ci
 
+      - name: Install sidecar dependencies
+        run: |
+          cd sidecar
+          npm ci
+          cd ..
+
       # This step builds the app.
       - name: Build Tauri App
         uses: tauri-apps/tauri-action@v0
