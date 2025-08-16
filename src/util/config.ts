@@ -24,8 +24,7 @@ if (!await exists(CONFIG_FILE)) {
 const change_listeners: Partial<Record<ConfigKey, ((value: any) => void)[]>> = {};
 
 /**
- * Subscribe to changes in a configuration value.<br>
- * Does NOT watch for changes to the actual config file, only changes made through the `set_config` function.
+ * Subscribe to changes in a configuration value.
  * @param key the key of the configuration value to subscribe to
  * @param callback the callback to call when the configuration value changes
  */
@@ -59,6 +58,7 @@ const notify_config_change = (key: ConfigKey, value: any): void => {
 /**
  * Get a configuration value from the config file, or the default value if it does not exist.
  * @param key the key of the configuration value to get
+ * @returns the value of the configuration key, or the default value if it does not exist
  */
 export const get_config = async (key: ConfigKey): Promise<any> => {
     if (!await exists(CONFIG_FILE)) {
