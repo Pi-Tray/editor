@@ -127,9 +127,9 @@ const App = () => {
 
     return (
         <ConditionalWSProvider url={ws_url}>
-            <div className="font-dm-sans flex h-screen max-h-screen bg-base-100 select-none">
+            <div className="font-dm-sans flex h-screen max-h-screen w-screen max-w-screen bg-base-100 select-none overflow-hidden">
                 <LeftNav/>
-                <main className="py-4 px-6 w-full h-full">
+                <main className="py-4 px-6 w-full max-w-full h-full max-h-full">
                     <AnimatedRouter
                         routes={{
                             "/": <GridEditorPage/>,
@@ -148,7 +148,7 @@ const App = () => {
                             exit: {opacity: 0},
                             transition: {duration: 0.25, ease: "easeInOut"},
 
-                            className: "h-full w-full"
+                            className: "h-full w-full max-h-full max-w-full",
                         }}
                     />
                 </main>

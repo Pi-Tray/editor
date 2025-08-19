@@ -39,14 +39,6 @@
     color: #111;
 }
 
-.element.success {
-    outline-color: #2568d2;
-}
-
-.element.failure {
-    outline-color: #d22525;
-}
-
 @media (prefers-color-scheme: light) {
     .element:active {
         background-color: #aaa;

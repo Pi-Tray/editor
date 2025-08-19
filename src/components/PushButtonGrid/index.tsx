@@ -13,6 +13,7 @@ interface PushButtonGridProps {
     cols: number;
 
     on_click?: (x: number, y: number) => void;
+    highlight?: {x: number, y: number} | null;
 
     className?: string;
     button_className?: string;
@@ -25,9 +26,10 @@ interface PushButtonGridProps {
  * @param className additional class names to apply
  * @param button_className additional class names to apply to each button
  * @param on_click callback function to call when a button is clicked, receives x and y coordinates
+ * @param highlight optional coordinates of a button to highlight, if null no button should be highlighted
  * @returns the element
  */
-export const PushButtonGrid = ({ rows, cols, className, button_className, on_click }: PushButtonGridProps) => {
+export const PushButtonGrid = ({ rows, cols, className, button_className, on_click, highlight }: PushButtonGridProps) => {
     const gridWrapperRef = useRef<HTMLDivElement>(null);
     const [gridStyle, setGridStyle] = useState<CSSProperties>({});
 
@@ -91,8 +93,11 @@ export const PushButtonGrid = ({ rows, cols, className, button_className, on_cli
 
     for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
+            const highlighted = highlight && highlight.x === x && highlight.y === y;
+            const highlight_class = highlighted ? styles.highlight : "";
+
             button_grid.push(
-                <PushButton key={`${x},${y}`} x={x} y={y} className={`${styles.button} ${button_className || ""}`} on_click={on_click} />
+                <PushButton key={`${x},${y}`} x={x} y={y} className={`${styles.button} ${button_className || ""} ${highlight_class}`} on_click={on_click} />
             );
         }
     }
