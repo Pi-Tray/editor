@@ -1,9 +1,19 @@
 import {useCallback, useState} from "react";
 
-import {useGridShape} from "../util/grid";
+import {useGridCell, useGridShape} from "../util/grid";
 import {PushButtonGrid} from "../components/PushButtonGrid";
 
 import {X} from "lucide-react";
+
+interface SidebarContentProps {
+    coords: {x: number, y: number};
+}
+
+const SidebarContent = ({coords}: SidebarContentProps) => {
+    const [cell, setCellData] = useGridCell(coords.y, coords.x);
+
+    return <p>{cell?.text}</p>
+}
 
 export const GridEditorPage = () => {
     const [shape] = useGridShape();
@@ -46,6 +56,8 @@ export const GridEditorPage = () => {
                         <X />
                     </button>
                 </div>
+
+                {selected_button && <SidebarContent coords={selected_button} />}
             </aside>
         </div>
     );
