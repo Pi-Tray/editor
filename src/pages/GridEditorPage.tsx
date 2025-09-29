@@ -4,6 +4,7 @@ import {useGridCell, useGridShape} from "../util/grid";
 import {PushButtonGrid} from "../components/PushButtonGrid";
 
 import {X} from "lucide-react";
+import {unwrap_plugin_reference} from "../util/plugins.ts";
 
 interface SidebarContentProps {
     coords: {x: number, y: number};
@@ -16,10 +17,13 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
         return <p>Empty cell</p>;
     }
 
+    const plugin = cell.plugin ? unwrap_plugin_reference(cell.plugin) : null;
+
     return (
         <>
             <p>Text: {cell.text} {cell.text_is_icon && "(icon)"}</p>
-            {cell.plugin && <p>Plugin: {typeof cell.plugin === "string" ? cell.plugin : cell.plugin.name}</p>}
+            {plugin && <p>Plugin: {plugin.name}</p>}
+            {plugin && plugin.config && <pre className="bg-base-300 p-2 rounded overflow-auto max-w-full"><code>{JSON.stringify(plugin.config, null, 2)}</code></pre>}
         </>
     );
 }

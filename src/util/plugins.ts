@@ -5,6 +5,8 @@ import {readTextFile, watch} from "@tauri-apps/plugin-fs";
 import {Command} from "@tauri-apps/plugin-shell";
 import {platform} from "@tauri-apps/plugin-os";
 
+import type { PluginReference } from "pi-tray-server/src/types";
+
 const appdata = await dataDir();
 
 const plugin_env = await join(appdata, "pi-tray", "plugin-env");
@@ -129,6 +131,14 @@ export const list_plugins_in_package = async (package_name: string, fully_qualif
     } else {
         return plugins;
     }
+}
+
+export const unwrap_plugin_reference = (plugin_ref: PluginReference) => {
+    if (typeof plugin_ref === "string") {
+        return { name: plugin_ref, config: undefined };
+    }
+
+    return { name: plugin_ref.name, config: plugin_ref.config };
 }
 
 // TODO: observe node_modules or package-lock.json so then we know when updates are happened and the plugin list needs to be rescanned. ideally supporting any manager but npm gets priority
