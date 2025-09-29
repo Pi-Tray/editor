@@ -12,7 +12,16 @@ interface SidebarContentProps {
 const SidebarContent = ({coords}: SidebarContentProps) => {
     const [cell, setCellData] = useGridCell(coords.y, coords.x);
 
-    return <p>{cell?.text}</p>
+    if (!cell) {
+        return <p>Empty cell</p>;
+    }
+
+    return (
+        <>
+            <p>Text: {cell.text} {cell.text_is_icon && "(icon)"}</p>
+            {cell.plugin && <p>Plugin: {typeof cell.plugin === "string" ? cell.plugin : cell.plugin.name}</p>}
+        </>
+    );
 }
 
 export const GridEditorPage = () => {
