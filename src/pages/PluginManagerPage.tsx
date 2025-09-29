@@ -1,40 +1,12 @@
-import {useEffect, useState} from "react";
+import {useState} from "react";
 
-import {install_package, list_plugins_in_package, usePackageList} from "../util/plugins";
+import {install_package, usePluginList} from "../util/plugins";
 
 export const PluginManagerPage = () => {
-    const packages = usePackageList();
-
-    const [plugins, setPlugins] = useState<string[]>([]);
+    const plugins = usePluginList(true);
 
     const [pkg_name_input, setPkgNameInput] = useState("");
     const [installing, setInstalling] = useState(false);
-
-    // reindex plugins when packages change
-    // TODO: do this more optimised in the real thing
-    useEffect(() => {
-        // use iife to safely use an async function inside useEffect
-        (async () => {
-            setPlugins([]);
-
-            let new_plugins: string[] = [];
-
-            for (const pkg of packages) {
-                try {
-                    const pkg_plugins = await list_plugins_in_package(pkg);
-                    pkg_plugins.forEach(plugin => {
-                        if (!new_plugins.includes(plugin)) {
-                            new_plugins.push(plugin);
-                        }
-                    });
-                } catch (error) {
-                    console.error(`Error listing plugins in package ${pkg}:`, error);
-                }
-            }
-
-            setPlugins(new_plugins);
-        })();
-    }, [packages]);
 
     return (
         <>

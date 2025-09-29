@@ -5,7 +5,7 @@ import {readTextFile, watch} from "@tauri-apps/plugin-fs";
 import {Command} from "@tauri-apps/plugin-shell";
 import {platform} from "@tauri-apps/plugin-os";
 
-import type { PluginReference } from "pi-tray-server/src/types";
+import type {PluginReference} from "pi-tray-server/src/types";
 
 const appdata = await dataDir();
 
@@ -81,6 +81,41 @@ export const usePackageList = () => {
     return packages;
 }
 
+export const usePluginList = (set_empty_when_reindexing = false) => {
+    const [plugins, setPlugins] = useState<string[]>([]);
+
+    const packages = usePackageList();
+
+    // reindex plugins when packages change
+    // TODO: do this more optimised in the real thing
+    useEffect(() => {
+        if (set_empty_when_reindexing) {
+            setPlugins([]);
+        }
+
+        // use iife to safely use an async function inside useEffect
+        (async () => {
+            let new_plugins: string[] = [];
+
+            for (const pkg of packages) {
+                try {
+                    const pkg_plugins = await list_plugins_in_package(pkg);
+                    pkg_plugins.forEach(plugin => {
+                        if (!new_plugins.includes(plugin)) {
+                            new_plugins.push(plugin);
+                        }
+                    });
+                } catch (error) {
+                    console.error(`Error listing plugins in package ${pkg}:`, error);
+                }
+            }
+            setPlugins(new_plugins);
+        })();
+    }, [packages]);
+
+    return plugins;
+}
+
 /**
  * Installs a package in the plugin-env directory by executing `npm install <package_ref>`.
  * @param package_ref the package reference to install, such as a name or git url
@@ -135,10 +170,10 @@ export const list_plugins_in_package = async (package_name: string, fully_qualif
 
 export const unwrap_plugin_reference = (plugin_ref: PluginReference) => {
     if (typeof plugin_ref === "string") {
-        return { name: plugin_ref, config: undefined };
+        return {name: plugin_ref, config: undefined};
     }
 
-    return { name: plugin_ref.name, config: plugin_ref.config };
+    return {name: plugin_ref.name, config: plugin_ref.config};
 }
 
 // TODO: observe node_modules or package-lock.json so then we know when updates are happened and the plugin list needs to be rescanned. ideally supporting any manager but npm gets priority
