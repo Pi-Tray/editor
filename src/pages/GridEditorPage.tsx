@@ -1,10 +1,11 @@
-import {useCallback, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 
 import {useGridCell, useGridShape} from "../util/grid";
 import {PushButtonGrid} from "../components/PushButtonGrid";
 
 import {X} from "lucide-react";
 import {unwrap_plugin_reference} from "../util/plugins.ts";
+import {JsonEditor} from "json-edit-react";
 
 interface SidebarContentProps {
     coords: {x: number, y: number};
@@ -13,17 +14,43 @@ interface SidebarContentProps {
 const SidebarContent = ({coords}: SidebarContentProps) => {
     const [cell, setCellData] = useGridCell(coords.y, coords.x);
 
+    const plugin = cell && (cell.plugin ? unwrap_plugin_reference(cell.plugin) : null);
+
+    const update_plugin_config = useCallback(
+        (new_config: { [key: string]: any } | undefined) => {
+            if (!cell) {
+                return;
+            }
+
+            if (!cell.plugin) {
+                return;
+            }
+
+            const new_plugin = unwrap_plugin_reference(cell.plugin);
+            new_plugin.config = new_config;
+
+            const new_cell = {
+                ...cell,
+                plugin: new_plugin
+            }
+
+            setCellData(new_cell);
+        },
+        [cell, setCellData]
+    );
+
     if (!cell) {
         return <p>Empty cell</p>;
     }
-
-    const plugin = cell.plugin ? unwrap_plugin_reference(cell.plugin) : null;
 
     return (
         <>
             <p>Text: {cell.text} {cell.text_is_icon && "(icon)"}</p>
             {plugin && <p>Plugin: {plugin.name}</p>}
-            {plugin && plugin.config && <pre className="bg-base-300 p-2 rounded overflow-auto max-w-full"><code>{JSON.stringify(plugin.config, null, 2)}</code></pre>}
+            {/* @ts-ignore */}
+            {plugin && plugin.config && <JsonEditor data={plugin.config} setData={update_plugin_config} />}
+            {!plugin && <p>No plugin!</p>}
+            {plugin && !plugin.config && <p>This plugin has no configuration set.</p>}
         </>
     );
 }
