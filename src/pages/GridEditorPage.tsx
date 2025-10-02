@@ -1,10 +1,10 @@
 import {useCallback, useEffect, useState} from "react";
 
 import {useGridCell, useGridShape} from "../util/grid";
+import {unwrap_plugin_reference} from "../util/plugins";
 import {PushButtonGrid} from "../components/PushButtonGrid";
 
 import {X} from "lucide-react";
-import {unwrap_plugin_reference} from "../util/plugins.ts";
 import {JsonEditor} from "json-edit-react";
 
 interface SidebarContentProps {
@@ -39,17 +39,38 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
         [cell, setCellData]
     );
 
+    const [cell_text_input, setCellTextInput] = useState(cell ? cell.text || "" : "");
+    useEffect(() => {
+        if (cell) {
+            setCellTextInput(cell.text || "");
+        }
+    }, [cell]);
+
     if (!cell) {
         return <p>Empty cell</p>;
     }
 
     return (
         <>
-            <p>Text: {cell.text} {cell.text_is_icon && "(icon)"}</p>
+            <label>
+                Text:
+                <input className="input input-bordered" value={cell_text_input} onChange={e => setCellTextInput(e.target.value)} onBlur={() => {
+                    // TODO: fix the logic with the debounced autosave, it was just too many hooks setting each other off causing blank outs and infinite loops
+                    setCellData({
+                        ...cell,
+                        text: cell_text_input
+                    });
+                }} />
+            </label>
+
+            <p>Is icon:</p>
+            {cell.text_is_icon}
+
             {plugin && <p>Plugin: {plugin.name}</p>}
+            {!plugin && <p>No plugin!</p>}
+
             {/* @ts-ignore */}
             {plugin && plugin.config && <JsonEditor data={plugin.config} setData={update_plugin_config} />}
-            {!plugin && <p>No plugin!</p>}
             {plugin && !plugin.config && <p>This plugin has no configuration set.</p>}
         </>
     );
@@ -78,7 +99,7 @@ export const GridEditorPage = () => {
 
     return (
         <div className="flex h-full max-h-full w-full max-w-full flex-1">
-            <div className={`flex-1 flex flex-col h-full max-h-full max-w-full gap-4 ${selected_button ? "w-33 mr-71" : "w-full mr-0"}`}>
+            <div className={`flex-1 flex flex-col h-full max-h-full max-w-full gap-4 ${selected_button ? "w-25 mr-79" : "w-full mr-0"}`}>
                 <h1 className="text-2xl font-bold">Edit grid</h1>
 
                 <div className="flex-1">
@@ -110,7 +131,7 @@ export const GridEditorPage = () => {
                 </label>
             </div>
 
-            <aside className={`h-full fixed top-0 right-0 w-66 overflow-y-auto bg-base-200 border-l border-l-base-300 p-4 transition-transform ${!selected_button && "translate-x-full"}`}>
+            <aside className={`h-full fixed top-0 right-0 w-75 overflow-y-auto bg-base-200 border-l border-l-base-300 p-4 transition-transform ${!selected_button && "translate-x-full"}`}>
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="font-semibold">Configure button</h3>
 

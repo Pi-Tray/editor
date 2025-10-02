@@ -1,7 +1,7 @@
 import {exists, writeTextFile, readTextFile, watch} from "@tauri-apps/plugin-fs";
 import { join, dataDir } from "@tauri-apps/api/path";
 
-import { useEffect, useState } from "react";
+import {useCallback, useEffect, useState} from "react";
 
 // TODO: we need to do this more properly
 import type { CellData } from "pi-tray-server/src/types"
@@ -229,8 +229,8 @@ export const useGridRowData = (): [GridRowData, (value: GridRowData) => Promise<
     return [value, setKeyValue];
 }
 
-export const useGridCell = (row_idx: number, col_idx: number): [CellData | undefined, (cell_data: CellData) => Promise<void>] => {
-    const [value, setValue] = useState<CellData | undefined>(undefined);
+export const useGridCell = (row_idx: number, col_idx: number): [CellData | undefined | null, (cell_data: CellData) => Promise<void>] => {
+    const [value, setValue] = useState<CellData | undefined | null>(null);
 
     useEffect(() => {
         // set initial value on mount
@@ -241,7 +241,16 @@ export const useGridCell = (row_idx: number, col_idx: number): [CellData | undef
         // create a fixed callback to allow for cleanup
         const callback = (new_value: GridShape | GridRowData) => {
             const row_data = new_value as GridRowData;
-            setValue(row_data[row_idx]?.[col_idx]);
+
+            // check the value has changed, using stringify to do deep comparison and avoid reference inequality issues
+            setValue(prev => {
+                const new_cell = row_data[row_idx]?.[col_idx];
+                if (JSON.stringify(prev) !== JSON.stringify(new_cell)) {
+                    return new_cell;
+                } else {
+                    return prev;
+                }
+            });
         }
 
         subscribe_to_grid_change("row_data", callback);
@@ -253,9 +262,12 @@ export const useGridCell = (row_idx: number, col_idx: number): [CellData | undef
     }, [row_idx, col_idx]);
 
     // create setter wrapper
-    const setKeyValue = async (newValue: CellData) => {
-        await set_grid_cell(row_idx, col_idx, newValue);
-    };
+    const setKeyValue = useCallback(
+        async (new_value: CellData) => {
+            await set_grid_cell(row_idx, col_idx, new_value);
+        },
+        [row_idx, col_idx]
+    );
 
     return [value, setKeyValue];
 }
