@@ -58,13 +58,18 @@ const notify_package_list_change = (): void => {
 
 /**
  * A React hook that provides the list of installed packages in plugin-env.
- * @returns array of installed plugin package names
+ * @param set_null_when_reindexing whether to set the package list to null while reindexing (default: true)
+ * @returns array of installed plugin package names or null if not yet loaded
  */
-export const usePackageList = () => {
-    const [packages, setPackages] = useState<string[]>([]);
+export const usePackageList = (set_null_when_reindexing = true) => {
+    const [packages, setPackages] = useState<string[] | null>(null);
 
     useEffect(() => {
         const fetch_packages = async () => {
+            if (set_null_when_reindexing) {
+                setPackages(null);
+            }
+
             setPackages(await list_installed_packages());
         };
 
@@ -81,16 +86,21 @@ export const usePackageList = () => {
     return packages;
 }
 
-export const usePluginList = (set_empty_when_reindexing = false) => {
-    const [plugins, setPlugins] = useState<string[]>([]);
+export const usePluginList = (set_null_when_reindexing = true) => {
+    const [plugins, setPlugins] = useState<string[] | null>(null);
 
     const packages = usePackageList();
 
     // reindex plugins when packages change
     // TODO: do this more optimised in the real thing
     useEffect(() => {
-        if (set_empty_when_reindexing) {
-            setPlugins([]);
+        if (set_null_when_reindexing) {
+            setPlugins(null);
+        }
+
+        if (packages === null) {
+            // packages not yet loaded
+            return;
         }
 
         // use iife to safely use an async function inside useEffect

@@ -20,6 +20,12 @@ const PluginSelect = ({
 }) => {
     const plugins = usePluginList();
 
+    if (plugins === null) {
+        return <select className="select select-bordered w-full" disabled>
+            <option>Loading plugins...</option>
+        </select>;
+    }
+
     return (
         <select className="select select-bordered w-full" value={value || ""} onChange={e => {
             const new_value = e.target.value;
@@ -39,7 +45,7 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
     const plugin = cell && (cell.plugin ? unwrap_plugin_reference(cell.plugin) : null);
 
     const update_plugin_config = useCallback(
-        (new_config: { [key: string]: any } | undefined) => {
+        (new_config: { [key: string]: any }) => {
             if (!cell) {
                 return;
             }

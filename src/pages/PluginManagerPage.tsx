@@ -3,7 +3,7 @@ import {useState} from "react";
 import {install_package, usePluginList} from "../util/plugins";
 
 export const PluginManagerPage = () => {
-    const plugins = usePluginList(true);
+    const plugins = usePluginList();
 
     const [pkg_name_input, setPkgNameInput] = useState("");
     const [installing, setInstalling] = useState(false);
@@ -11,7 +11,7 @@ export const PluginManagerPage = () => {
     return (
         <>
             <h1 className="text-2xl font-bold">Manage plugins</h1>
-            <pre>{plugins.length > 0 ? plugins.join("\n") : "Indexing plugins..."}</pre>
+            <pre>{plugins ? plugins.join("\n") : "Indexing plugins..."}</pre>
 
             <input type="text" disabled={installing} value={pkg_name_input} onChange={(e) => setPkgNameInput(e.target.value)} placeholder="Package name or git URL" className="border p-2 rounded" />
             <button className="btn btn-primary" disabled={installing} onClick={async () => {
