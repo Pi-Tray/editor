@@ -53,7 +53,7 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
     return (
         <>
             <label>
-                Text:
+                Label:
                 <input className="input input-bordered" value={cell_text_input} onChange={e => setCellTextInput(e.target.value)} onBlur={() => {
                     // TODO: fix the logic with the debounced autosave, it was just too many hooks setting each other off causing blank outs and infinite loops
                     setCellData({
@@ -63,8 +63,21 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
                 }} />
             </label>
 
-            <p>Is icon:</p>
-            {cell.text_is_icon}
+            <label className="flex items-center gap-2 my-2">
+                Label type:
+                <input type="radio" className="radio" name="label_type" checked={!cell.text_is_icon} onChange={() => {
+                    setCellData({
+                        ...cell,
+                        text_is_icon: false
+                    });
+                }} /> Text
+                <input type="radio" className="radio" name="label_type" checked={!!cell.text_is_icon} onChange={() => {
+                    setCellData({
+                        ...cell,
+                        text_is_icon: true
+                    });
+                }} /> Icon
+            </label>
 
             {plugin && <p>Plugin: {plugin.name}</p>}
             {!plugin && <p>No plugin!</p>}
