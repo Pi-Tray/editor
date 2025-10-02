@@ -11,6 +11,8 @@ interface SidebarContentProps {
     coords: {x: number, y: number};
 }
 
+// TODO: this code SUUUUUUCKSSS!!!!
+
 const PluginSelect = ({
     value,
     onChange
@@ -129,6 +131,7 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
                 }} />
             </label>
 
+            {/* TODO: do something with the config template plugins provide us */}
             {/* @ts-ignore */}
             {plugin && plugin.config && <JsonEditor data={plugin.config} setData={update_plugin_config} />}
         </>
