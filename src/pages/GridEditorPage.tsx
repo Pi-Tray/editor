@@ -1,7 +1,7 @@
 import {useCallback, useEffect, useState} from "react";
 
 import {useGridCell, useGridShape} from "../util/grid";
-import {unwrap_plugin_reference} from "../util/plugins";
+import {unwrap_plugin_reference, usePluginList} from "../util/plugins";
 import {PushButtonGrid} from "../components/PushButtonGrid";
 
 import {X} from "lucide-react";
@@ -9,6 +9,28 @@ import {JsonEditor} from "json-edit-react";
 
 interface SidebarContentProps {
     coords: {x: number, y: number};
+}
+
+const PluginSelect = ({
+    value,
+    onChange
+}: {
+    value: string | null;
+    onChange: (new_value: string | null) => void;
+}) => {
+    const plugins = usePluginList();
+
+    return (
+        <select className="select select-bordered w-full" value={value || ""} onChange={e => {
+            const new_value = e.target.value;
+            onChange(new_value === "" ? null : new_value);
+        }}>
+            <option value="">No plugin</option>
+            {plugins.map(plugin_name => (
+                <option key={plugin_name} value={plugin_name}>{plugin_name}</option>
+            ))}
+        </select>
+    );
 }
 
 const SidebarContent = ({coords}: SidebarContentProps) => {
@@ -79,12 +101,30 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
                 }} /> Icon
             </label>
 
-            {plugin && <p>Plugin: {plugin.name}</p>}
-            {!plugin && <p>No plugin!</p>}
+            <label className="mt-2">
+                Plugin:
+                <PluginSelect value={plugin ? plugin.name : null} onChange={new_plugin_name => {
+                    if (new_plugin_name === null) {
+                        // remove plugin
+                        setCellData({
+                            ...cell,
+                            plugin: undefined
+                        });
+                    } else {
+                        // set new plugin, with no config
+                        setCellData({
+                            ...cell,
+                            plugin: {
+                                name: new_plugin_name,
+                                config: undefined
+                            }
+                        });
+                    }
+                }} />
+            </label>
 
             {/* @ts-ignore */}
             {plugin && plugin.config && <JsonEditor data={plugin.config} setData={update_plugin_config} />}
-            {plugin && !plugin.config && <p>This plugin has no configuration set.</p>}
         </>
     );
 }

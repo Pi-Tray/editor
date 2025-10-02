@@ -170,10 +170,10 @@ export const list_plugins_in_package = async (package_name: string, fully_qualif
 
 export const unwrap_plugin_reference = (plugin_ref: PluginReference) => {
     if (typeof plugin_ref === "string") {
-        return {name: plugin_ref, config: undefined};
+        return {name: plugin_ref, config: {}};
     }
 
-    return {name: plugin_ref.name, config: plugin_ref.config};
+    return {name: plugin_ref.name, config: plugin_ref.config || {}};
 }
 
 // TODO: observe node_modules or package-lock.json so then we know when updates are happened and the plugin list needs to be rescanned. ideally supporting any manager but npm gets priority
