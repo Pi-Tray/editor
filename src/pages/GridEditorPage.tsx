@@ -81,7 +81,7 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
     }
 
     return (
-        <>
+        <div className="flex flex-col gap-2 flex-1">
             <label>
                 Label:
                 <input className="input input-bordered" value={cell_text_input} onChange={e => setCellTextInput(e.target.value)} onBlur={() => {
@@ -93,7 +93,7 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
                 }} />
             </label>
 
-            <label className="flex items-center gap-2 my-2">
+            <label className="flex items-center gap-2 py-1">
                 Label type:
                 <input type="radio" className="radio" name="label_type" checked={!cell.text_is_icon} onChange={() => {
                     setCellData({
@@ -109,7 +109,7 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
                 }} /> Icon
             </label>
 
-            <label className="mt-2">
+            <label>
                 Plugin:
                 <PluginSelect value={plugin ? plugin.name : null} onChange={new_plugin_name => {
                     if (new_plugin_name === null) {
@@ -129,12 +129,22 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
                         });
                     }
                 }} />
+
+                {/* TODO: do something with the config template plugins provide us */}
+                {/* @ts-ignore */}
+                {plugin && plugin.config && <JsonEditor className="mt-2" data={plugin.config} setData={update_plugin_config} />}
             </label>
 
-            {/* TODO: do something with the config template plugins provide us */}
-            {/* @ts-ignore */}
-            {plugin && plugin.config && <JsonEditor data={plugin.config} setData={update_plugin_config} />}
-        </>
+            <div className="mt-auto mb-12 flex flex-col gap-2">
+                <button className="btn btn-outline btn-primary">
+                    Simulate button push
+                </button>
+
+                <button className="btn btn-outline btn-error">
+                    Delete button
+                </button>
+            </div>
+        </div>
     );
 }
 
@@ -193,7 +203,7 @@ export const GridEditorPage = () => {
                 </label>
             </div>
 
-            <aside className={`h-full fixed top-0 right-0 w-75 overflow-y-auto bg-base-200 border-l border-l-base-300 p-4 transition-transform ${!selected_button && "translate-x-full"}`}>
+            <aside className={`h-full flex flex-col fixed top-0 right-0 w-75 overflow-y-auto bg-base-200 border-l border-l-base-300 p-4 transition-transform ${!selected_button && "translate-x-full"}`}>
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="font-semibold">Configure button</h3>
 
