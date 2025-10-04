@@ -4,7 +4,7 @@ import {useGridCell, useGridShape} from "../util/grid";
 import {unwrap_plugin_reference, usePluginList} from "../util/plugins";
 import {PushButtonGrid} from "../components/PushButtonGrid";
 
-import {X} from "lucide-react";
+import {MousePointerClick, Settings, Trash, X} from "lucide-react";
 import {JsonEditor} from "json-edit-react";
 
 interface SidebarContentProps {
@@ -38,6 +38,15 @@ const PluginSelect = ({
                 <option key={plugin_name} value={plugin_name}>{plugin_name}</option>
             ))}
         </select>
+    );
+}
+
+const SidebarButton = ({children, onClick, Icon, className = ""}: {children: React.ReactNode, onClick: () => void, Icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>, className?: string}) => {
+    return (
+        <button className={`btn btn-outline w-full flex items-center gap-1.5 ${className}`} onClick={onClick}>
+            {Icon && <Icon className="w-4.5 h-4.5" />}
+            {children}
+        </button>
     );
 }
 
@@ -132,17 +141,22 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
 
                 {/* TODO: do something with the config template plugins provide us */}
                 {/* @ts-ignore */}
-                {plugin && plugin.config && <JsonEditor className="mt-2" data={plugin.config} setData={update_plugin_config} />}
+                {/*{plugin && plugin.config && <JsonEditor className="mt-2" data={plugin.config} setData={update_plugin_config} />}*/}
+                {plugin && (
+                    <SidebarButton onClick={() => {alert("Not implemented yet!")}} Icon={Settings} className="mt-2 btn-info">
+                        Configure plugin
+                    </SidebarButton>
+                )}
             </label>
 
             <div className="mt-auto mb-12 flex flex-col gap-2">
-                <button className="btn btn-outline btn-primary">
+                <SidebarButton onClick={() => {alert("Not implemented yet!")}} Icon={MousePointerClick} className="btn-primary">
                     Simulate button push
-                </button>
+                </SidebarButton>
 
-                <button className="btn btn-outline btn-error">
+                <SidebarButton onClick={() => {alert("Not implemented yet!")}} Icon={Trash} className="btn-error">
                     Delete button
-                </button>
+                </SidebarButton>
             </div>
         </div>
     );
