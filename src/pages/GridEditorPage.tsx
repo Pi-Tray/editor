@@ -1,11 +1,12 @@
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 
 import {useGridCell, useGridShape} from "../util/grid";
 import {unwrap_plugin_reference, usePluginList} from "../util/plugins";
 import {PushButtonGrid} from "../components/PushButtonGrid";
 
 import {MousePointerClick, Settings, Trash, X} from "lucide-react";
-import {JsonEditor} from "json-edit-react";
+import {githubDarkTheme, githubLightTheme, JsonEditor} from "json-edit-react";
+import {useMediaQuery} from "../hooks/useMediaQuery.ts";
 
 interface SidebarContentProps {
     coords: {x: number, y: number};
@@ -54,29 +55,7 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
     const [cell, setCellData] = useGridCell(coords.y, coords.x);
 
     const plugin = cell && (cell.plugin ? unwrap_plugin_reference(cell.plugin) : null);
-
-    const update_plugin_config = useCallback(
-        (new_config: { [key: string]: any }) => {
-            if (!cell) {
-                return;
-            }
-
-            if (!cell.plugin) {
-                return;
-            }
-
-            const new_plugin = unwrap_plugin_reference(cell.plugin);
-            new_plugin.config = new_config;
-
-            const new_cell = {
-                ...cell,
-                plugin: new_plugin
-            }
-
-            setCellData(new_cell);
-        },
-        [cell, setCellData]
-    );
+    const [config_edit_open, setConfigEditOpen] = useState(false);
 
     const [cell_text_input, setCellTextInput] = useState(cell ? cell.text || "" : "");
     useEffect(() => {
@@ -139,13 +118,14 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
                     }
                 }} />
 
-                {/* TODO: do something with the config template plugins provide us */}
-                {/* @ts-ignore */}
-                {/*{plugin && plugin.config && <JsonEditor className="mt-2" data={plugin.config} setData={update_plugin_config} />}*/}
                 {plugin && (
-                    <SidebarButton onClick={() => {alert("Not implemented yet!")}} Icon={Settings} className="mt-2 btn-info">
-                        Configure plugin
-                    </SidebarButton>
+                    <>
+                        <SidebarButton onClick={() => setConfigEditOpen(true)} Icon={Settings} className="mt-2 btn-info">
+                            Configure plugin
+                        </SidebarButton>
+
+                        <ConfigEditDialog coords={coords} open={config_edit_open} onClose={() => setConfigEditOpen(false)} />
+                    </>
                 )}
             </label>
 
@@ -159,6 +139,92 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
                 </SidebarButton>
             </div>
         </div>
+    );
+}
+
+const ConfigEditDialog = ({
+    coords,
+    open,
+    onClose
+}: {
+    coords: {x: number, y: number};
+    open: boolean;
+    onClose: () => void;
+}) => {
+    const dialog_ref = useRef<HTMLDialogElement>(null);
+    const dark_mode = useMediaQuery("(prefers-color-scheme: dark)");
+
+    const [cell, setCellData] = useGridCell(coords.y, coords.x);
+
+    const plugin = cell && (cell.plugin ? unwrap_plugin_reference(cell.plugin) : null);
+
+    const update_plugin_config = useCallback(
+        (new_config: { [key: string]: any }) => {
+            if (!cell) {
+                return;
+            }
+
+            if (!cell.plugin) {
+                return;
+            }
+
+            const new_plugin = unwrap_plugin_reference(cell.plugin);
+            new_plugin.config = new_config;
+
+            const new_cell = {
+                ...cell,
+                plugin: new_plugin
+            }
+
+            setCellData(new_cell);
+        },
+        [cell, setCellData]
+    );
+
+    // sync open state
+    useEffect(() => {
+        if (dialog_ref.current) {
+            if (open) {
+                dialog_ref.current.showModal();
+            } else {
+                dialog_ref.current.close();
+            }
+
+            const on_close = () => {
+                onClose();
+            }
+
+            dialog_ref.current.addEventListener("close", on_close);
+
+            return () => {
+                dialog_ref.current?.removeEventListener("close", on_close);
+            }
+        }
+    }, [open, onClose]);
+
+    if (!cell || !plugin) {
+        return null;
+    }
+
+    // TODO: do something with the config template plugins provide us
+
+    return (
+        <dialog ref={dialog_ref} className="modal">
+            <div className="modal-box w-2xl max-w-2xl">
+                <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-bold">Config editor</h3>
+
+                    <form method="dialog">
+                        <button className="cursor-pointer" title="Close dialog">
+                            <X />
+                        </button>
+                    </form>
+                </div>
+
+                {/* @ts-ignore */}
+                <JsonEditor theme={dark_mode ? githubDarkTheme : githubLightTheme} className="mt-2" data={plugin.config} setData={update_plugin_config}/>
+            </div>
+        </dialog>
     );
 }
 
