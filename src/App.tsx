@@ -22,6 +22,7 @@ import {DevToolsWebsocketPage} from "./pages/DevToolsPage/DevToolsWebsocketPage"
 import {onOpenUrl} from "@tauri-apps/plugin-deep-link";
 import {getCurrentWindow} from "@tauri-apps/api/window";
 import {install_package} from "./util/plugins.ts";
+import {DevicePage} from "./pages/DevicePage.tsx";
 
 /**
  * A wrapper component that conditionally renders the WebSocket provider based on the provided URL.<br>
@@ -136,6 +137,7 @@ const App = () => {
                             "/plugins": <PluginManagerPage/>,
                             "/assets": <AssetManagerPage/>,
                             "/settings": <SettingsPage/>,
+                            "/device": <DevicePage />,
                             "/devtools": <DevToolsPage/>,
                             "/devtools/websocket": <DevToolsWebsocketPage/>,
                         }}
