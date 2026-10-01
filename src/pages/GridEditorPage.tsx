@@ -1,7 +1,7 @@
 import {useCallback, useEffect, useRef, useState} from "react";
 
 import {delete_grid_cell, useGridCell, useGridShape} from "../util/grid";
-import {unwrap_plugin_reference, usePluginInfo, usePluginList} from "../util/plugins";
+import {unwrap_plugin_reference, usePluginInfo} from "../util/plugins";
 import {PushButtonGrid} from "../components/PushButtonGrid";
 
 import {ImageIcon, MousePointerClick, Plus, Settings, Trash, X} from "lucide-react";
@@ -449,3 +449,4 @@ export const GridEditorPage = () => {
 // TODO: bg dimming option
 // TODO: text color option
 // TODO: text font selection
+// TODO: "live" tiles/buttons where the server sends info, needs more plugin interface, could show stuff like gpu utilisation etc
