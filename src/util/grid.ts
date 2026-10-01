@@ -164,6 +164,23 @@ export const set_grid_cell = async (row_idx: number, col_idx: number, cell_data:
     await set_grid_row_data(row_data);
 }
 
+export const delete_grid_cell = async (row_idx: number, col_idx: number): Promise<void> => {
+    const row_data = await get_grid_row_data();
+
+    if (!row_data[row_idx]?.[col_idx]) {
+        return;
+    }
+
+    delete row_data[row_idx][col_idx];
+
+    // drop the row entirely if it has no cells left, to keep grid.json tidy
+    if (Object.keys(row_data[row_idx]).length === 0) {
+        delete row_data[row_idx];
+    }
+
+    await set_grid_row_data(row_data);
+}
+
 /**
  * A React hook to get and set the grid shape.<br>
  * It will automatically subscribe to changes to the grid shape and update the state when it changes.

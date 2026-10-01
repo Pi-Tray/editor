@@ -1,12 +1,13 @@
 import {useCallback, useEffect, useRef, useState} from "react";
 
-import {useGridCell, useGridShape} from "../util/grid";
+import {delete_grid_cell, useGridCell, useGridShape} from "../util/grid";
 import {unwrap_plugin_reference, usePluginList} from "../util/plugins";
 import {PushButtonGrid} from "../components/PushButtonGrid";
 
-import {MousePointerClick, Settings, Trash, X} from "lucide-react";
+import {MousePointerClick, Plus, Settings, Trash, X} from "lucide-react";
 import {githubDarkTheme, githubLightTheme, JsonEditor} from "json-edit-react";
 import {useMediaQuery} from "../hooks/useMediaQuery.ts";
+import {useWebSocket} from "../contexts/WSProvider.tsx";
 
 interface SidebarContentProps {
     coords: {x: number, y: number};
@@ -51,6 +52,68 @@ const SidebarButton = ({children, onClick, Icon, className = ""}: {children: Rea
     );
 }
 
+const ConfirmCountdownBar = ({duration_ms}: {duration_ms: number}) => {
+    const bar_ref = useRef<HTMLSpanElement>(null);
+
+    // shrink from full width to nothing over the confirm window, starting fresh on every mount
+    useEffect(() => {
+        const animation = bar_ref.current?.animate(
+            [{transform: "scaleX(1)"}, {transform: "scaleX(0)"}],
+            {duration: duration_ms, easing: "linear", fill: "forwards"}
+        );
+
+        return () => animation?.cancel();
+    }, [duration_ms]);
+
+    return <span ref={bar_ref} className="absolute bottom-0 left-0 h-1 w-full origin-left bg-current opacity-60" />;
+}
+
+const ConfirmSidebarButton = ({
+    children,
+    onConfirm,
+    Icon,
+    className = "",
+    confirm_text = "Sure? Click again to confirm.",
+    hide_icon_on_confirming = true,
+    reset_after_ms = 3000
+}: {
+    children: React.ReactNode,
+    onConfirm: () => void,
+    Icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>,
+    className?: string,
+    confirm_text?: string,
+    hide_icon_on_confirming?: boolean,
+    reset_after_ms?: number
+}) => {
+    const [confirming, setConfirming] = useState(false);
+
+    // drop back to the normal label if the user doesn't confirm in time
+    useEffect(() => {
+        if (!confirming) {
+            return;
+        }
+
+        const reset_timeout = setTimeout(() => setConfirming(false), reset_after_ms);
+        return () => clearTimeout(reset_timeout);
+    }, [confirming, reset_after_ms]);
+
+    const handle_click = () => {
+        if (confirming) {
+            setConfirming(false);
+            onConfirm();
+        } else {
+            setConfirming(true);
+        }
+    };
+
+    return (
+        <SidebarButton onClick={handle_click} Icon={hide_icon_on_confirming && confirming ? undefined : Icon} className={`relative overflow-hidden ${className} ${confirming ? "btn-active" : ""}`}>
+            {confirming ? confirm_text : children}
+            {confirming && <ConfirmCountdownBar duration_ms={reset_after_ms} />}
+        </SidebarButton>
+    );
+}
+
 const SidebarContent = ({coords}: SidebarContentProps) => {
     const [cell, setCellData] = useGridCell(coords.y, coords.x);
 
@@ -64,8 +127,54 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
         }
     }, [cell]);
 
+    const ws = useWebSocket();
+    const simulate_button_push = useCallback(
+        () => {
+            if (!cell) {
+                return;
+            }
+
+            if (!plugin) {
+                alert("No plugin configured for this button.");
+                return;
+            }
+
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    action: "push",
+                    payload: {
+                        x: coords.x,
+                        y: coords.y
+                    }
+                }));
+            } else {
+                alert("WebSocket is not open.");
+            }
+        },
+        [cell, plugin, ws, coords]
+    );
+
+    const delete_button = useCallback(
+        () => {
+            if (!cell) {
+                return;
+            }
+
+            delete_grid_cell(coords.y, coords.x);
+        },
+        [cell, coords]
+    );
+
     if (!cell) {
-        return <p>Empty cell</p>;
+        return (
+            <div className="flex flex-col gap-2">
+                <p>Empty cell</p>
+
+                <SidebarButton onClick={() => setCellData({text: ""})} Icon={Plus} className="btn-primary">
+                    Create button
+                </SidebarButton>
+            </div>
+        );
     }
 
     return (
@@ -130,13 +239,13 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
             </label>
 
             <div className="mt-auto mb-12 flex flex-col gap-2">
-                <SidebarButton onClick={() => {alert("Not implemented yet!")}} Icon={MousePointerClick} className="btn-primary">
+                <SidebarButton onClick={simulate_button_push} Icon={MousePointerClick} className="btn-primary">
                     Simulate button push
                 </SidebarButton>
 
-                <SidebarButton onClick={() => {alert("Not implemented yet!")}} Icon={Trash} className="btn-error">
+                <ConfirmSidebarButton onConfirm={delete_button} Icon={Trash} className="btn-error">
                     Delete button
-                </SidebarButton>
+                </ConfirmSidebarButton>
             </div>
         </div>
     );
