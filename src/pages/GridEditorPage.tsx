@@ -15,7 +15,16 @@ interface SidebarContentProps {
     coords: {x: number, y: number};
 }
 
-// TODO: this code SUUUUUUCKSSS!!!!
+const SidebarSection = ({title, title_end, children}: {title: string, title_end?: React.ReactNode, children: React.ReactNode}) => (
+    <section className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+            <h4 className="text-xs font-semibold uppercase tracking-wide opacity-60">{title}</h4>
+            {title_end}
+        </div>
+
+        {children}
+    </section>
+);
 
 const PluginSelect = ({
     value,
@@ -45,10 +54,20 @@ const PluginSelect = ({
     );
 }
 
-const SidebarButton = ({children, onClick, Icon, className = ""}: {children: React.ReactNode, onClick: () => void, Icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>, className?: string}) => {
+interface SidebarButtonProps {
+    children: React.ReactNode;
+    onClick: () => void;
+    Icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    className?: string;
+    variant?: "outline" | "soft";
+}
+
+const SidebarButton = ({children, onClick, Icon, className = "", variant = "outline"}: SidebarButtonProps) => {
+    const variant_classes = variant === "soft" ? "btn-soft btn-sm" : "btn-outline";
+
     return (
-        <button className={`btn btn-outline w-full flex items-center gap-1.5 ${className}`} onClick={onClick}>
-            {Icon && <Icon className="w-4.5 h-4.5" />}
+        <button type="button" className={`btn ${variant_classes} w-full flex items-center gap-1.5 ${className}`} onClick={onClick}>
+            {Icon && <Icon className={variant === "soft" ? "w-4 h-4" : "w-4.5 h-4.5"} />}
             {children}
         </button>
     );
@@ -122,17 +141,12 @@ const ChooseIconButton = ({label, setLabel}: {label: string, setLabel: (new_labe
 
     return (
         <>
-            <div className="flex items-center gap-2">
-                {label && <CustomDynamicIcon name={label} className="w-6 h-6" fallback_autoscale={false} />}
+            <div className="flex h-10 items-center gap-2">
+                {label && <CustomDynamicIcon name={label} className="w-6 h-6 shrink-0" fallback_autoscale={false} />}
 
-                <div className="flex-1">
-                    <SidebarButton
-                        onClick={() => setIconPickerOpen(true)}
-                        className="btn-outline"
-                    >
-                        {label ? "Change icon" : "Choose icon"}
-                    </SidebarButton>
-                </div>
+                <SidebarButton onClick={() => setIconPickerOpen(true)} variant="soft" className="flex-1">
+                    {label ? "Change icon" : "Choose icon"}
+                </SidebarButton>
             </div>
 
             <IconPickerDialog
@@ -202,7 +216,7 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
     if (!cell) {
         return (
             <div className="flex flex-col gap-2">
-                <p>Empty cell</p>
+                <p className="opacity-70">Empty cell</p>
 
                 <SidebarButton onClick={() => setCellData({text: ""})} Icon={Plus} className="btn-primary">
                     Create button
@@ -212,10 +226,35 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
     }
 
     return (
-        <div className="flex flex-col gap-2 flex-1">
-            <label>
-                Label:
+        <div className="flex flex-col gap-6 flex-1">
+            <SidebarSection
+                title="Label"
+                title_end={
+                    <div className="flex items-center gap-3 text-xs" role="radiogroup" aria-label="Label type">
+                        <label className="flex items-center gap-1.5 cursor-pointer">
+                            <input
+                                type="radio"
+                                name="label_type"
+                                className="radio radio-xs"
+                                checked={!cell.text_is_icon}
+                                onChange={() => setCellData({...cell, text_is_icon: false})}
+                            />
+                            Text
+                        </label>
 
+                        <label className="flex items-center gap-1.5 cursor-pointer">
+                            <input
+                                type="radio"
+                                name="label_type"
+                                className="radio radio-xs"
+                                checked={!!cell.text_is_icon}
+                                onChange={() => setCellData({...cell, text_is_icon: true})}
+                            />
+                            Icon
+                        </label>
+                    </div>
+                }
+            >
                 {cell.text_is_icon ? (
                     <ChooseIconButton label={cell_text_input} setLabel={new_label => {
                         setCellTextInput(new_label);
@@ -225,34 +264,24 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
                         });
                     }} />
                 ) : (
-                    <input className="input input-bordered" value={cell_text_input} onChange={e => setCellTextInput(e.target.value)} onBlur={() => {
-                        // TODO: fix the logic with the debounced autosave, it was just too many hooks setting each other off causing blank outs and infinite loops
-                        setCellData({
-                            ...cell,
-                            text: cell_text_input
-                        });
-                    }} />
+                    <input
+                        className="input input-bordered h-10 w-full"
+                        aria-label="Label text"
+                        placeholder="Button text"
+                        value={cell_text_input}
+                        onChange={e => setCellTextInput(e.target.value)}
+                        onBlur={() => {
+                            // TODO: fix the logic with the debounced autosave, it was just too many hooks setting each other off causing blank outs and infinite loops
+                            setCellData({
+                                ...cell,
+                                text: cell_text_input
+                            });
+                        }}
+                    />
                 )}
-            </label>
+            </SidebarSection>
 
-            <label className="flex items-center gap-2 py-1">
-                Label type:
-                <input type="radio" className="radio" name="label_type" checked={!cell.text_is_icon} onChange={() => {
-                    setCellData({
-                        ...cell,
-                        text_is_icon: false
-                    });
-                }} /> Text
-                <input type="radio" className="radio" name="label_type" checked={!!cell.text_is_icon} onChange={() => {
-                    setCellData({
-                        ...cell,
-                        text_is_icon: true
-                    });
-                }} /> Icon
-            </label>
-
-            <label>
-                Plugin:
+            <SidebarSection title="Plugin">
                 <PluginSelect value={plugin ? plugin.name : null} onChange={new_plugin_name => {
                     if (new_plugin_name === null) {
                         // remove plugin
@@ -274,36 +303,35 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
 
                 {plugin && (
                     <>
-                        <SidebarButton onClick={() => setConfigEditOpen(true)} Icon={Settings} className="mt-2 btn-info">
+                        <SidebarButton onClick={() => setConfigEditOpen(true)} Icon={Settings} variant="soft" className="btn-info">
                             Configure plugin
                         </SidebarButton>
 
                         <ConfigEditDialog coords={coords} open={config_edit_open} onClose={() => setConfigEditOpen(false)} />
                     </>
                 )}
-            </label>
+            </SidebarSection>
 
-            <label>
-                Background:
+            <SidebarSection title="Background">
                 <div className="flex gap-2">
-                    <SidebarButton onClick={() => setBackgroundPickerOpen(true)} Icon={ImageIcon} className="flex-1">
+                    <SidebarButton onClick={() => setBackgroundPickerOpen(true)} Icon={ImageIcon} variant="soft" className="flex-1">
                         {cell.background ? "Change background" : "Set background"}
                     </SidebarButton>
 
                     {cell.background && (
-                        <button type="button" className="btn btn-ghost btn-square" title="Remove background" onClick={() => setCellData({...cell, background: undefined})}>
+                        <button type="button" className="btn btn-ghost btn-sm btn-square" title="Remove background" onClick={() => setCellData({...cell, background: undefined})}>
                             <X className="w-4 h-4" />
                         </button>
                     )}
                 </div>
-            </label>
 
-            <AssetPickerDialog
-                open={background_picker_open}
-                onClose={close_background_picker}
-                selected_id={cell.background}
-                onPick={asset_id => setCellData({...cell, background: asset_id})}
-            />
+                <AssetPickerDialog
+                    open={background_picker_open}
+                    onClose={close_background_picker}
+                    selected_id={cell.background}
+                    onPick={asset_id => setCellData({...cell, background: asset_id})}
+                />
+            </SidebarSection>
 
             <div className="mt-auto mb-12 flex flex-col gap-2">
                 <SidebarButton onClick={simulate_button_push} Icon={MousePointerClick} className="btn-primary">
@@ -333,7 +361,7 @@ export const GridEditorPage = () => {
 
     const close_sidebar = useCallback(
         () => {
-        setSelectedButton(null);
+            setSelectedButton(null);
         },
         []
     );
