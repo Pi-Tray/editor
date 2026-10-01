@@ -122,7 +122,7 @@ const ChooseIconButton = ({label, setLabel}: {label: string, setLabel: (new_labe
     return (
         <>
             <div className="flex items-center gap-2">
-                {label && <CustomDynamicIcon name={label} className="w-6 h-6" />}
+                {label && <CustomDynamicIcon name={label} className="w-6 h-6" fallback_autoscale={false} />}
 
                 <div className="flex-1">
                     <SidebarButton

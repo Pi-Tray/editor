@@ -2,7 +2,7 @@ import {DynamicIcon} from "lucide-react/dynamic";
 import {AutoTextScale} from "./AutoTextScale.tsx";
 import {CUSTOM_ICON_MAP} from "../custom_icons.ts";
 
-export const CustomDynamicIcon = ({name, className = ""}: {name: string, className?: string}) => {
+export const CustomDynamicIcon = ({name, className = "", fallback_autoscale = true}: {name: string, className?: string, fallback_autoscale?: boolean}) => {
     if (CUSTOM_ICON_MAP.has(name)) {
         return (
             <img
@@ -22,7 +22,7 @@ export const CustomDynamicIcon = ({name, className = ""}: {name: string, classNa
                 className={className}
                 fallback={
                     // fallback to text if the icon is not found
-                    () => <AutoTextScale>{name}</AutoTextScale>
+                    () => fallback_autoscale ? <AutoTextScale>{name}</AutoTextScale> : <span>{name}</span>
                 }
             ></DynamicIcon>
         );
