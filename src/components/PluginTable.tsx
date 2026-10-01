@@ -153,7 +153,7 @@ export const PluginTable = () => {
     return (
         <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold mr-auto">Updates</h2>
+                <h2 className="text-lg font-semibold mr-auto">Packages</h2>
 
                 {updatable.length > 1 && (
                     <button className="btn btn-sm btn-primary" disabled={busy} onClick={() => update_packages(updatable)}>
@@ -163,7 +163,7 @@ export const PluginTable = () => {
 
                 <button className="btn btn-sm btn-outline" disabled={busy} onClick={check}>
                     <RefreshCw className={`w-4 h-4 ${checking ? "animate-spin" : ""}`} />
-                    Check
+                    Check for updates
                 </button>
             </div>
 
