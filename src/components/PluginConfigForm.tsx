@@ -1,6 +1,7 @@
 import {Plus, Trash} from "lucide-react";
 
 import type {PluginConfigTemplate} from "pi-tray-server/src/types";
+import {PluginDescription} from "./PluginDescription.tsx";
 
 type TemplateField = PluginConfigTemplate[string];
 type PrimitiveType = "string" | "number" | "boolean";
@@ -225,7 +226,7 @@ export const PluginConfigForm = ({template, value, onChange}: PluginConfigFormPr
                         {field.optional && <span className="font-normal opacity-60"> (optional)</span>}
                     </span>
 
-                    {field.description && <span className="text-sm opacity-70">{field.description}</span>}
+                    {field.description && <PluginDescription>{field.description}</PluginDescription>}
 
                     <FieldValueInput field={field} value={config_object[key]} onChange={new_value => set_field(key, field, new_value)} />
 
