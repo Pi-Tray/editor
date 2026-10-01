@@ -4,11 +4,12 @@ import {delete_grid_cell, useGridCell, useGridShape} from "../util/grid";
 import {unwrap_plugin_reference, usePluginList} from "../util/plugins";
 import {PushButtonGrid} from "../components/PushButtonGrid";
 
-import {MousePointerClick, Plus, Settings, Trash, X} from "lucide-react";
+import {ImageIcon, MousePointerClick, Plus, Settings, Trash, X} from "lucide-react";
 import {useWebSocket} from "../contexts/WSProvider.tsx";
 import {ConfigEditDialog} from "../components/ConfigEditDialog.tsx";
 import {IconPickerDialog} from "../components/IconPicker.tsx";
 import {CustomDynamicIcon} from "../components/CustomDynamicIcon.tsx";
+import {AssetPickerDialog} from "../components/AssetPickerDialog.tsx";
 
 interface SidebarContentProps {
     coords: {x: number, y: number};
@@ -150,6 +151,9 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
     const plugin = cell && (cell.plugin ? unwrap_plugin_reference(cell.plugin) : null);
     const [config_edit_open, setConfigEditOpen] = useState(false);
 
+    const [background_picker_open, setBackgroundPickerOpen] = useState(false);
+    const close_background_picker = useCallback(() => setBackgroundPickerOpen(false), []);
+
     const [cell_text_input, setCellTextInput] = useState(cell ? cell.text || "" : "");
     useEffect(() => {
         if (cell) {
@@ -279,6 +283,28 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
                 )}
             </label>
 
+            <label>
+                Background:
+                <div className="flex gap-2">
+                    <SidebarButton onClick={() => setBackgroundPickerOpen(true)} Icon={ImageIcon} className="flex-1">
+                        {cell.background ? "Change background" : "Set background"}
+                    </SidebarButton>
+
+                    {cell.background && (
+                        <button type="button" className="btn btn-ghost btn-square" title="Remove background" onClick={() => setCellData({...cell, background: undefined})}>
+                            <X className="w-4 h-4" />
+                        </button>
+                    )}
+                </div>
+            </label>
+
+            <AssetPickerDialog
+                open={background_picker_open}
+                onClose={close_background_picker}
+                selected_id={cell.background}
+                onPick={asset_id => setCellData({...cell, background: asset_id})}
+            />
+
             <div className="mt-auto mb-12 flex flex-col gap-2">
                 <SidebarButton onClick={simulate_button_push} Icon={MousePointerClick} className="btn-primary">
                     Simulate button push
@@ -363,3 +389,6 @@ export const GridEditorPage = () => {
 }
 
 // TODO: clean into separate components, even if within the same file
+// TODO: bg dimming option
+// TODO: text color option
+// TODO: text font selection

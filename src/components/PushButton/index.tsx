@@ -5,6 +5,7 @@ import {AutoTextScale} from "../AutoTextScale";
 
 import styles from "./component.module.css";
 import {CustomDynamicIcon} from "../CustomDynamicIcon.tsx";
+import {useAsset} from "../../util/assets.ts";
 
 // adapted from client PushButton code, but ws behaviour ripped out and adapted to a callback function
 // also uses the hook useGridCell to handle the button's representation rather than asking the server for it
@@ -30,6 +31,8 @@ interface PushButtonProps {
 export const PushButton = ({x, y, style, className, on_click}: PushButtonProps) => {
     // this made me realise that all the files are row first, but we use x and y for indices. doesnt really matter just initially confusing
     const [cell] = useGridCell(y, x);
+
+    const background_asset = useAsset(cell?.background);
 
     // log function that includes button coordinates, acts just like console.log
     const button_log = useCallback(
@@ -83,8 +86,13 @@ export const PushButton = ({x, y, style, className, on_click}: PushButtonProps) 
         }
     }
 
+    // JSON.stringify quotes and escapes the url, so it can't break out of the css url()
+    const button_style: React.CSSProperties = background_asset
+        ? {...style, backgroundImage: `url(${JSON.stringify(background_asset.preview_url)})`, backgroundSize: "cover", backgroundPosition: "center"}
+        : {...style};
+
     return (
-        <button style={style} className={`${styles.element} ${className || ""}`} onClick={handle_click}>
+        <button style={button_style} className={`${styles.element} ${className || ""}`} onClick={handle_click}>
             {content}
         </button>
     );
