@@ -146,6 +146,7 @@ export const list_plugins_in_package = async (package_name: string, fully_qualif
 
 export interface PluginInfo {
     display_name?: string;
+    description?: string;
     config_template?: PluginConfigTemplate;
 }
 
