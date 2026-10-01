@@ -1,6 +1,7 @@
 import {useState} from "react";
 
 import {install_package, usePluginList} from "../util/plugins";
+import {PluginTable} from "../components/PluginTable.tsx";
 
 export const PluginManagerPage = () => {
     const plugins = usePluginList();
@@ -40,6 +41,8 @@ export const PluginManagerPage = () => {
             }}>
                 {installing ? "..." : "Install"}
             </button>
+
+            <PluginTable />
         </>
     );
 }

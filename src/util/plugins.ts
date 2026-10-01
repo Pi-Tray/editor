@@ -58,6 +58,11 @@ const notify_package_list_change = (): void => {
 }
 
 /**
+ * Forces display names and config templates to be fetched fresh on next use, e.g. after a package is updated in place.
+ */
+export const clear_plugin_info_cache = () => plugin_info_cache.clear();
+
+/**
  * A React hook that provides the list of installed packages in plugin-env.
  * @param set_null_when_reindexing whether to set the package list to null while reindexing (default: true)
  * @returns array of installed plugin package names or null if not yet loaded
