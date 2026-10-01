@@ -57,11 +57,12 @@ switch (command) {
         const info_require = createRequire(in_plugin_env("package.json"));
         try {
             const pkg = info_require(info_pkg_name);
-            const plugin_info: Record<string, { display_name?: string, config_template?: unknown }> = {};
+            const plugin_info: Record<string, { display_name?: string, description?: string, config_template?: unknown }> = {};
 
             for (const [plugin_key, plugin] of Object.entries<any>(pkg || {})) {
                 plugin_info[plugin_key] = {
                     display_name: plugin?.display_name,
+                    description: plugin?.description,
                     config_template: plugin?.config_template
                 };
             }

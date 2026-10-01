@@ -249,6 +249,13 @@ export interface IndexedPlugin {
     name: string;
 
     display_name: string;
+
+    description?: string;
+
+    /**
+     * Whether the plugin has a config template, i.e. has settings to fill in.
+     */
+    configurable: boolean;
 }
 
 export interface PackagePlugins {
@@ -287,7 +294,9 @@ export const usePluginIndex = () => {
                     package_name,
                     plugins: Object.entries(package_info).map(([plugin_key, info]) => ({
                         name: `${package_name}/${plugin_key}`,
-                        display_name: info.display_name || plugin_key
+                        display_name: info.display_name || plugin_key,
+                        description: info.description,
+                        configurable: !!info.config_template && Object.keys(info.config_template).length > 0
                     }))
                 };
             } catch (error) {

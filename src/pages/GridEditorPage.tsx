@@ -1,7 +1,7 @@
 import {useCallback, useEffect, useRef, useState} from "react";
 
 import {delete_grid_cell, useGridCell, useGridShape} from "../util/grid";
-import {unwrap_plugin_reference, usePluginList} from "../util/plugins";
+import {unwrap_plugin_reference, usePluginInfo, usePluginList} from "../util/plugins";
 import {PushButtonGrid} from "../components/PushButtonGrid";
 
 import {ImageIcon, MousePointerClick, Plus, Settings, Trash, X} from "lucide-react";
@@ -10,6 +10,7 @@ import {ConfigEditDialog} from "../components/ConfigEditDialog.tsx";
 import {IconPickerDialog} from "../components/IconPicker.tsx";
 import {CustomDynamicIcon} from "../components/CustomDynamicIcon.tsx";
 import {AssetPickerDialog} from "../components/AssetPickerDialog.tsx";
+import {PluginPickerDialog} from "../components/PluginPickerDialog.tsx";
 
 interface SidebarContentProps {
     coords: {x: number, y: number};
@@ -33,24 +34,45 @@ const PluginSelect = ({
     value: string | null;
     onChange: (new_value: string | null) => void;
 }) => {
-    const plugins = usePluginList();
+    const [picker_open, setPickerOpen] = useState(false);
+    const close_picker = useCallback(() => setPickerOpen(false), []);
 
-    if (plugins === null) {
-        return <select className="select select-bordered w-full" disabled>
-            <option>Loading plugins...</option>
-        </select>;
-    }
+    // undefined while loading, null if the plugin isn't installed any more
+    const plugin_info = usePluginInfo(value);
 
     return (
-        <select className="select select-bordered w-full" value={value || ""} onChange={e => {
-            const new_value = e.target.value;
-            onChange(new_value === "" ? null : new_value);
-        }}>
-            <option value="">No plugin</option>
-            {plugins.map(plugin_name => (
-                <option key={plugin_name} value={plugin_name}>{plugin_name}</option>
-            ))}
-        </select>
+        <>
+            <div className="flex items-center gap-2">
+                <button
+                    type="button"
+                    onClick={() => setPickerOpen(true)}
+                    className="flex h-12 min-w-0 flex-1 cursor-pointer flex-col items-start justify-center rounded-field border border-base-content/20 bg-base-100 px-3 text-left hover:border-base-content/40"
+                >
+                    {value ? (
+                        <>
+                            <span className="w-full truncate text-sm font-medium">
+                                {plugin_info === undefined ? "Loading..." : plugin_info?.display_name || value.slice(value.lastIndexOf("/") + 1)}
+                            </span>
+                            <span className="w-full truncate font-mono text-xs opacity-60" title={value}>{value}</span>
+                        </>
+                    ) : (
+                        <span className="text-sm opacity-60">Choose a plugin...</span>
+                    )}
+                </button>
+
+                {value && (
+                    <button type="button" className="btn btn-ghost btn-sm btn-square" title="Remove plugin" onClick={() => onChange(null)}>
+                        <X className="w-4 h-4" />
+                    </button>
+                )}
+            </div>
+
+            {value && plugin_info === null && (
+                <p className="text-xs text-warning">This plugin isn't installed.</p>
+            )}
+
+            <PluginPickerDialog open={picker_open} onClose={close_picker} current={value} onPick={onChange} />
+        </>
     );
 }
 
@@ -213,6 +235,13 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
         [cell, coords]
     );
 
+    // only offer configuration for plugins that declare settings
+    const plugin_info = usePluginInfo(plugin ? plugin.name : null);
+    const configurable = !!plugin_info?.config_template && Object.keys(plugin_info.config_template).length > 0;
+
+    // still allow editing if the cell already has config, e.g. from before a plugin dropped its template, so it can be cleared
+    const has_existing_config = !!plugin && Object.keys(plugin.config).length > 0;
+
     if (!cell) {
         return (
             <div className="flex flex-col gap-2">
@@ -301,7 +330,7 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
                     }
                 }} />
 
-                {plugin && (
+                {plugin && (configurable || has_existing_config) && (
                     <>
                         <SidebarButton onClick={() => setConfigEditOpen(true)} Icon={Settings} variant="soft" className="btn-info">
                             Configure plugin
