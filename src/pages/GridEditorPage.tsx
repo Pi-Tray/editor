@@ -4,11 +4,10 @@ import {delete_grid_cell, useGridCell, useGridShape} from "../util/grid";
 import {unwrap_plugin_reference, usePluginList} from "../util/plugins";
 import {PushButtonGrid} from "../components/PushButtonGrid";
 
-import {MousePointerClick, Plus, Settings, Shapes, Trash, X} from "lucide-react";
+import {MousePointerClick, Plus, Settings, Trash, X} from "lucide-react";
 import {useWebSocket} from "../contexts/WSProvider.tsx";
 import {ConfigEditDialog} from "../components/ConfigEditDialog.tsx";
 import {IconPickerDialog} from "../components/IconPicker.tsx";
-import {DynamicIcon} from "lucide-react/dynamic";
 import {CustomDynamicIcon} from "../components/CustomDynamicIcon.tsx";
 
 interface SidebarContentProps {
@@ -123,7 +122,7 @@ const ChooseIconButton = ({label, setLabel}: {label: string, setLabel: (new_labe
     return (
         <>
             <div className="flex items-center gap-2">
-                <CustomDynamicIcon name={label} className="w-6 h-6" />
+                {label && <CustomDynamicIcon name={label} className="w-6 h-6" />}
 
                 <div className="flex-1">
                     <SidebarButton
