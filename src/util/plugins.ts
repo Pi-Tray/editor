@@ -5,7 +5,8 @@ import {readTextFile, watch} from "@tauri-apps/plugin-fs";
 import {Command} from "@tauri-apps/plugin-shell";
 import {platform} from "@tauri-apps/plugin-os";
 
-import type {PluginReference} from "pi-tray-server/src/types";
+// TODO: does pi-tray want to be a monorepo?
+import type {PluginReference, PluginConfigTemplate} from "pi-tray-server/src/types";
 
 const appdata = await dataDir();
 
@@ -178,6 +179,103 @@ export const list_plugins_in_package = async (package_name: string, fully_qualif
     }
 }
 
+export interface PluginInfo {
+    display_name?: string;
+    config_template?: PluginConfigTemplate;
+}
+
+// keyed by package name, cleared whenever the installed packages change
+const plugin_info_cache = new Map<string, Promise<Record<string, PluginInfo>>>();
+subscribe_to_package_list_change(() => plugin_info_cache.clear());
+
+/**
+ * Uses the sidecar binary to get the display name and config template of every plugin in a package.<br>
+ * Results are cached until the installed packages change, as each call spawns the sidecar.
+ * @param package_name the package name e.g. @pi-tray/builtin
+ * @returns plugin info keyed by the plugin's name within the package, e.g. `run_command`
+ */
+const get_package_plugin_info = (package_name: string): Promise<Record<string, PluginInfo>> => {
+    const cached_info = plugin_info_cache.get(package_name);
+    if (cached_info) {
+        return cached_info;
+    }
+
+    const info_promise = (async () => {
+        const command = Command.sidecar("binaries/sidecar", ["plugin-info", package_name]);
+        const result = await command.execute();
+
+        if (result.code !== 0) {
+            console.error("Failed to get plugin info for package:", package_name, result);
+            throw new Error(`Failed to get plugin info for package: ${package_name}`);
+        }
+
+        return JSON.parse(result.stdout.trim()) as Record<string, PluginInfo>;
+    })();
+
+    // don't cache failures, so the next call retries
+    info_promise.catch(() => plugin_info_cache.delete(package_name));
+
+    plugin_info_cache.set(package_name, info_promise);
+    return info_promise;
+}
+
+/**
+ * Gets the display name and config template of a plugin.
+ * @param plugin_name the fully qualified plugin name e.g. @pi-tray/builtin/run_command
+ * @returns the plugin info, or null if the plugin isn't found in its package
+ */
+export const get_plugin_info = async (plugin_name: string): Promise<PluginInfo | null> => {
+    // the plugin's own name is always the last segment, everything before it is the (possibly scoped) package
+    const separator_idx = plugin_name.lastIndexOf("/");
+    if (separator_idx <= 0) {
+        return null;
+    }
+
+    const package_name = plugin_name.slice(0, separator_idx);
+    const plugin_key = plugin_name.slice(separator_idx + 1);
+
+    const package_info = await get_package_plugin_info(package_name);
+    return package_info[plugin_key] ?? null;
+}
+
+/**
+ * A React hook that provides a plugin's display name and config template.
+ * @param plugin_name the fully qualified plugin name, or null if there is no plugin
+ * @returns the plugin info, `undefined` while loading, or `null` if there is no plugin or it couldn't be loaded
+ */
+export const usePluginInfo = (plugin_name: string | null) => {
+    const [info, setInfo] = useState<PluginInfo | null | undefined>(undefined);
+
+    useEffect(() => {
+        if (!plugin_name) {
+            setInfo(null);
+            return;
+        }
+
+        // ignore results that arrive after the plugin has changed
+        let superseded = false;
+        setInfo(undefined);
+
+        get_plugin_info(plugin_name)
+            .then(new_info => {
+                if (!superseded) {
+                    setInfo(new_info);
+                }
+            })
+            .catch(error => {
+                console.error(`Error getting info for plugin ${plugin_name}:`, error);
+                if (!superseded) {
+                    setInfo(null);
+                }
+            });
+
+        return () => {
+            superseded = true;
+        };
+    }, [plugin_name]);
+
+    return info;
+}
 export const unwrap_plugin_reference = (plugin_ref: PluginReference) => {
     if (typeof plugin_ref === "string") {
         return {name: plugin_ref, config: {}};

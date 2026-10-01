@@ -78,7 +78,9 @@
         {
           "name": "binaries/sidecar",
           "args": [
-            "list-plugins",
+            {
+              "validator": "^(list-plugins|plugin-info)$"
+            },
             {
               "validator": "\\S+"
             }

@@ -45,4 +45,33 @@ switch (command) {
         }
 
         break;
+    case "plugin-info": {
+        // gets the display name and config template of every plugin inside a given package
+
+        const info_pkg_name = process.argv[3];
+        if (!info_pkg_name) {
+            console.error("Usage: sidecar plugin-info <package-name>");
+            process.exit(1);
+        }
+
+        const info_require = createRequire(in_plugin_env("package.json"));
+        try {
+            const pkg = info_require(info_pkg_name);
+            const plugin_info: Record<string, { display_name?: string, config_template?: unknown }> = {};
+
+            for (const [plugin_key, plugin] of Object.entries<any>(pkg || {})) {
+                plugin_info[plugin_key] = {
+                    display_name: plugin?.display_name,
+                    config_template: plugin?.config_template
+                };
+            }
+
+            console.log(JSON.stringify(plugin_info));
+        } catch (error) {
+            console.error(`Error loading package ${info_pkg_name}:`, error);
+            process.exit(1);
+        }
+
+        break;
+    }
 }
