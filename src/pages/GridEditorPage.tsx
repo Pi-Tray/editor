@@ -4,9 +4,12 @@ import {delete_grid_cell, useGridCell, useGridShape} from "../util/grid";
 import {unwrap_plugin_reference, usePluginList} from "../util/plugins";
 import {PushButtonGrid} from "../components/PushButtonGrid";
 
-import {MousePointerClick, Plus, Settings, Trash, X} from "lucide-react";
+import {MousePointerClick, Plus, Settings, Shapes, Trash, X} from "lucide-react";
 import {useWebSocket} from "../contexts/WSProvider.tsx";
 import {ConfigEditDialog} from "../components/ConfigEditDialog.tsx";
+import {IconPickerDialog} from "../components/IconPicker.tsx";
+import {DynamicIcon} from "lucide-react/dynamic";
+import {CustomDynamicIcon} from "../components/CustomDynamicIcon.tsx";
 
 interface SidebarContentProps {
     coords: {x: number, y: number};
@@ -113,6 +116,35 @@ const ConfirmSidebarButton = ({
     );
 }
 
+const ChooseIconButton = ({label, setLabel}: {label: string, setLabel: (new_label: string) => void}) => {
+    const [icon_picker_open, setIconPickerOpen] = useState(false);
+    const close_icon_picker = useCallback(() => setIconPickerOpen(false), []);
+
+    return (
+        <>
+            <div className="flex items-center gap-2">
+                <CustomDynamicIcon name={label} className="w-6 h-6" />
+
+                <div className="flex-1">
+                    <SidebarButton
+                        onClick={() => setIconPickerOpen(true)}
+                        className="btn-outline"
+                    >
+                        {label ? "Change icon" : "Choose icon"}
+                    </SidebarButton>
+                </div>
+            </div>
+
+            <IconPickerDialog
+                open={icon_picker_open}
+                onClose={close_icon_picker}
+                current={label}
+                onPick={new_icon_name => setLabel(new_icon_name)}
+            />
+        </>
+    );
+}
+
 const SidebarContent = ({coords}: SidebarContentProps) => {
     const [cell, setCellData] = useGridCell(coords.y, coords.x);
 
@@ -180,13 +212,24 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
         <div className="flex flex-col gap-2 flex-1">
             <label>
                 Label:
-                <input className="input input-bordered" value={cell_text_input} onChange={e => setCellTextInput(e.target.value)} onBlur={() => {
-                    // TODO: fix the logic with the debounced autosave, it was just too many hooks setting each other off causing blank outs and infinite loops
-                    setCellData({
-                        ...cell,
-                        text: cell_text_input
-                    });
-                }} />
+
+                {cell.text_is_icon ? (
+                    <ChooseIconButton label={cell_text_input} setLabel={new_label => {
+                        setCellTextInput(new_label);
+                        setCellData({
+                            ...cell,
+                            text: new_label
+                        });
+                    }} />
+                ) : (
+                    <input className="input input-bordered" value={cell_text_input} onChange={e => setCellTextInput(e.target.value)} onBlur={() => {
+                        // TODO: fix the logic with the debounced autosave, it was just too many hooks setting each other off causing blank outs and infinite loops
+                        setCellData({
+                            ...cell,
+                            text: cell_text_input
+                        });
+                    }} />
+                )}
             </label>
 
             <label className="flex items-center gap-2 py-1">
