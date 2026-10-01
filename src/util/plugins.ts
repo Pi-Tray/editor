@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 
 import {dataDir, join} from "@tauri-apps/api/path";
 import {readTextFile, watch} from "@tauri-apps/plugin-fs";
@@ -90,46 +90,6 @@ export const usePackageList = (set_null_when_reindexing = true) => {
     }, []);
 
     return packages;
-}
-
-export const usePluginList = (set_null_when_reindexing = true) => {
-    const [plugins, setPlugins] = useState<string[] | null>(null);
-
-    const packages = usePackageList();
-
-    // reindex plugins when packages change
-    // TODO: do this more optimised in the real thing
-    useEffect(() => {
-        if (set_null_when_reindexing) {
-            setPlugins(null);
-        }
-
-        if (packages === null) {
-            // packages not yet loaded
-            return;
-        }
-
-        // use iife to safely use an async function inside useEffect
-        (async () => {
-            let new_plugins: string[] = [];
-
-            for (const pkg of packages) {
-                try {
-                    const pkg_plugins = await list_plugins_in_package(pkg);
-                    pkg_plugins.forEach(plugin => {
-                        if (!new_plugins.includes(plugin)) {
-                            new_plugins.push(plugin);
-                        }
-                    });
-                } catch (error) {
-                    console.error(`Error listing plugins in package ${pkg}:`, error);
-                }
-            }
-            setPlugins(new_plugins);
-        })();
-    }, [packages]);
-
-    return plugins;
 }
 
 /**
@@ -281,6 +241,85 @@ export const usePluginInfo = (plugin_name: string | null) => {
 
     return info;
 }
+
+export interface IndexedPlugin {
+    /**
+     * Fully qualified plugin name, e.g. @pi-tray/builtin/run_command
+     */
+    name: string;
+
+    display_name: string;
+}
+
+export interface PackagePlugins {
+    package_name: string;
+    plugins: IndexedPlugin[];
+
+    /**
+     * Why the package couldn't be indexed, if it couldn't.
+     */
+    error?: string;
+}
+
+/**
+ * A React hook that indexes the plugins contributed by every installed package.<br>
+ * Shares the plugin info cache, so each package only spawns the sidecar once until the installed packages change.
+ * @returns each package with its plugins, in package.json order, or null until the first index completes
+ */
+export const usePluginIndex = () => {
+    // keep showing the previous index while reindexing rather than flashing empty
+    const packages = usePackageList(false);
+    const [index, setIndex] = useState<PackagePlugins[] | null>(null);
+
+    useEffect(() => {
+        if (packages === null) {
+            return;
+        }
+
+        // ignore results that arrive after the package list has changed again
+        let superseded = false;
+
+        Promise.all(packages.map(async (package_name): Promise<PackagePlugins> => {
+            try {
+                const package_info = await get_package_plugin_info(package_name);
+
+                return {
+                    package_name,
+                    plugins: Object.entries(package_info).map(([plugin_key, info]) => ({
+                        name: `${package_name}/${plugin_key}`,
+                        display_name: info.display_name || plugin_key
+                    }))
+                };
+            } catch (error) {
+                return {package_name, plugins: [], error: error instanceof Error ? error.message : String(error)};
+            }
+        })).then(new_index => {
+            if (!superseded) {
+                setIndex(new_index);
+            }
+        });
+
+        return () => {
+            superseded = true;
+        };
+    }, [packages]);
+
+    return index;
+}
+
+/**
+ * A React hook that provides every installed plugin's fully qualified name.
+ * @returns array of plugin names, or null until the first index completes
+ */
+export const usePluginList = () => {
+    const index = usePluginIndex();
+
+    return useMemo(
+        () => index ? index.flatMap(package_plugins => package_plugins.plugins.map(plugin => plugin.name)) : null,
+        [index]
+    );
+}
+
 export const unwrap_plugin_reference = (plugin_ref: PluginReference) => {
     if (typeof plugin_ref === "string") {
         return {name: plugin_ref, config: {}};
@@ -289,8 +328,13 @@ export const unwrap_plugin_reference = (plugin_ref: PluginReference) => {
     return {name: plugin_ref.name, config: plugin_ref.config || {}};
 }
 
-// TODO: observe node_modules or package-lock.json so then we know when updates are happened and the plugin list needs to be rescanned. ideally supporting any manager but npm gets priority
-await watch(package_json, async () => {
-    console.log("package.json changed, notifying listeners...");
-    notify_package_list_change();
+// watch the folder rather than the files, as package-lock.json doesn't exist until the first install and watching a missing file fails
+// package.json changes on install/uninstall, package-lock.json also changes when a git package is updated in place
+await watch(plugin_env, async (event) => {
+    const packages_changed = event.paths.some(changed_path => changed_path.endsWith("package.json") || changed_path.endsWith("package-lock.json"));
+
+    if (packages_changed) {
+        console.log("plugin-env packages changed, notifying listeners...");
+        notify_package_list_change();
+    }
 });

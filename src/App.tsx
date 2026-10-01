@@ -124,7 +124,7 @@ const App = () => {
         <ConditionalWSProvider url={ws_url}>
             <div className="font-dm-sans flex h-screen max-h-screen w-screen max-w-screen bg-base-100 select-none overflow-hidden">
                 <LeftNav/>
-                <main className="py-4 px-6 w-full max-w-full h-full max-h-full">
+                <main className="w-full max-w-full h-full max-h-full">
                     <AnimatedRouter
                         routes={routes}
 
@@ -136,7 +136,7 @@ const App = () => {
                             exit: {opacity: 0},
                             transition: {duration: 0.25, ease: "easeInOut"},
 
-                            className: "h-full w-full max-h-full max-w-full",
+                            className: "h-full w-full max-h-full max-w-full overflow-y-auto py-4 px-6",
                         }}
                     />
                 </main>
