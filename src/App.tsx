@@ -11,18 +11,12 @@ import {AnimatedRouter} from "./components/AnimatedRouter";
 import {LeftNav} from "./components/LeftNav";
 import {StatusToast} from "./components/StatusToast";
 
+import {routes} from "./routes.tsx";
 import {NotFound} from "./pages/NotFound";
-import {GridEditorPage} from "./pages/GridEditorPage";
-import {PluginManagerPage} from "./pages/PluginManagerPage";
-import {AssetManagerPage} from "./pages/AssetManagerPage";
-import {SettingsPage} from "./pages/SettingsPage";
-import {DevToolsPage} from "./pages/DevToolsPage";
-import {DevToolsWebsocketPage} from "./pages/DevToolsPage/DevToolsWebsocketPage";
 
 import {onOpenUrl} from "@tauri-apps/plugin-deep-link";
 import {getCurrentWindow} from "@tauri-apps/api/window";
 import {install_package} from "./util/plugins.ts";
-import {DevicePage} from "./pages/DevicePage.tsx";
 
 /**
  * A wrapper component that conditionally renders the WebSocket provider based on the provided URL.<br>
@@ -132,15 +126,7 @@ const App = () => {
                 <LeftNav/>
                 <main className="py-4 px-6 w-full max-w-full h-full max-h-full">
                     <AnimatedRouter
-                        routes={{
-                            "/": <GridEditorPage/>,
-                            "/plugins": <PluginManagerPage/>,
-                            "/assets": <AssetManagerPage/>,
-                            "/settings": <SettingsPage/>,
-                            "/device": <DevicePage />,
-                            "/devtools": <DevToolsPage/>,
-                            "/devtools/websocket": <DevToolsWebsocketPage/>,
-                        }}
+                        routes={routes}
 
                         not_found={<NotFound/>}
 
