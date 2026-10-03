@@ -255,7 +255,7 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
                 <p className="opacity-70">Empty cell</p>
 
                 <SidebarButton onClick={() => setCellData({text: ""})} Icon={Plus} className="btn-primary">
-                    Create button
+                    Create
                 </SidebarButton>
             </div>
         );
@@ -387,7 +387,7 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
                 )}
 
                 <ConfirmSidebarButton onConfirm={delete_button} Icon={Trash} className="btn-error">
-                    Delete button
+                    Delete cell
                 </ConfirmSidebarButton>
             </div>
         </div>
@@ -454,9 +454,9 @@ export const GridEditorPage = () => {
 
             <aside className={`h-full flex flex-col fixed top-0 right-0 w-75 overflow-y-auto bg-base-200 border-l border-l-base-300 p-4 transition-transform ${!selected_button && "translate-x-full"}`}>
                 <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold">Configure button</h3>
+                    <h3 className="font-semibold">Configure cell</h3>
 
-                    <button title="Close configure button sidebar" onClick={close_sidebar} className="cursor-pointer">
+                    <button title="Close configure cell sidebar" onClick={close_sidebar} className="cursor-pointer">
                         <X />
                     </button>
                 </div>
