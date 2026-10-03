@@ -6,6 +6,7 @@ import {DevicePage} from "./pages/DevicePage.tsx";
 import {DevToolsPage} from "./pages/DevToolsPage";
 import {DevToolsWebsocketPage} from "./pages/DevToolsPage/DevToolsWebsocketPage.tsx";
 import {DevToolsPluginsPage} from "./pages/DevToolsPage/DevToolsPluginsPage.tsx";
+import {DevToolsLogsLandingPage, DevToolsLogsPage} from "./pages/DevToolsPage/DevToolsLogPages.tsx";
 
 export const routes = {
     "/": <GridEditorPage/>,
@@ -16,4 +17,6 @@ export const routes = {
     "/devtools": <DevToolsPage/>,
     "/devtools/websocket": <DevToolsWebsocketPage/>,
     "/devtools/plugins": <DevToolsPluginsPage />,
+    "/devtools/logs": <DevToolsLogsLandingPage/>,
+    "/devtools/logs/:source": <DevToolsLogsPage/>,
 };

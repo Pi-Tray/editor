@@ -1,6 +1,7 @@
 import {useState, useCallback, useEffect} from "react";
 import {useWebSocket} from "../../contexts/WSProvider";
-import {AlertCircle} from "lucide-react";
+import {AlertCircle, ArrowLeft} from "lucide-react";
+import {Link} from "wouter";
 
 export const DevToolsWebsocketPage = () => {
     const ws = useWebSocket();
@@ -80,7 +81,12 @@ export const DevToolsWebsocketPage = () => {
 
     return (
         <div className="h-full w-full flex flex-col">
-            <h1 className="text-2xl font-bold">Test WebSocket</h1>
+            <div className="flex items-center gap-2">
+                <Link href="/devtools" className="btn btn-ghost btn-sm btn-square" title="Back to DevTools">
+                    <ArrowLeft className="w-4 h-4" />
+                </Link>
+                <h1 className="text-2xl font-bold">Test WebSocket</h1>
+            </div>
 
             <div className="m-4 flex flex-col gap-4 h-full">
                 <fieldset className="fieldset">
