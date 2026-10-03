@@ -6,6 +6,9 @@ import {AutoTextScale} from "../AutoTextScale";
 import styles from "./component.module.css";
 import {CustomDynamicIcon} from "../CustomDynamicIcon.tsx";
 import {useAsset} from "../../util/assets.ts";
+import {Activity} from "lucide-react";
+import {unwrap_plugin_reference, usePluginInfo} from "../../util/plugins.ts";
+import {merge_live_cell, useLiveCell} from "../../util/live_overlay.ts";
 
 // adapted from client PushButton code, but ws behaviour ripped out and adapted to a callback function
 // also uses the hook useGridCell to handle the button's representation rather than asking the server for it
@@ -30,7 +33,14 @@ interface PushButtonProps {
  */
 export const PushButton = ({x, y, style, className, on_click}: PushButtonProps) => {
     // this made me realise that all the files are row first, but we use x and y for indices. doesnt really matter just initially confusing
-    const [cell] = useGridCell(y, x);
+    const [stored_cell] = useGridCell(y, x);
+
+    // live plugins' values from the server, only for the fields the plugin says it controls
+    const plugin_name = stored_cell?.plugin ? unwrap_plugin_reference(stored_cell.plugin).name : null;
+    const plugin_info = usePluginInfo(plugin_name);
+    const live_cell = useLiveCell(y, x, plugin_name);
+    const is_live = (plugin_info?.live_controls?.length ?? 0) > 0;
+    const cell = stored_cell && merge_live_cell(stored_cell, live_cell, plugin_info?.live_controls);
 
     const background_asset = useAsset(cell?.background);
 
@@ -94,6 +104,11 @@ export const PushButton = ({x, y, style, className, on_click}: PushButtonProps) 
     return (
         <button style={button_style} className={`${styles.element} ${className || ""}`} onClick={handle_click}>
             {content}
+            {is_live && (
+                <span className={styles.live_badge} title={live_cell ? "Showing live values from the server" : "Live tile. Showing the stored label until the server sends live values"}>
+                    <Activity className={styles.live_badge_icon} />
+                </span>
+            )}
         </button>
     );
 }

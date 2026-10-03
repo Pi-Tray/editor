@@ -6,7 +6,7 @@ import {Command} from "@tauri-apps/plugin-shell";
 import {platform} from "@tauri-apps/plugin-os";
 
 // TODO: does pi-tray want to be a monorepo?
-import type {PluginReference, PluginConfigTemplate} from "pi-tray-server/src/types";
+import type {PluginReference, PluginConfigTemplate, PluginLiveControllable} from "pi-tray-server/src/types";
 
 const appdata = await dataDir();
 
@@ -148,6 +148,8 @@ export interface PluginInfo {
     display_name?: string;
     description?: string;
     config_template?: PluginConfigTemplate;
+    live_controls?: PluginLiveControllable[];
+    pushable?: boolean;
 }
 
 // keyed by package name, cleared whenever the installed packages change
@@ -257,6 +259,11 @@ export interface IndexedPlugin {
      * Whether the plugin has a config template, i.e. has settings to fill in.
      */
     configurable: boolean;
+
+    /**
+     * Whether the plugin updates its button live, e.g. a clock.
+     */
+    live: boolean;
 }
 
 export interface PackagePlugins {
@@ -297,7 +304,8 @@ export const usePluginIndex = () => {
                         name: `${package_name}/${plugin_key}`,
                         display_name: info.display_name || plugin_key,
                         description: info.description,
-                        configurable: !!info.config_template && Object.keys(info.config_template).length > 0
+                        configurable: !!info.config_template && Object.keys(info.config_template).length > 0,
+                        live: (info.live_controls?.length ?? 0) > 0
                     }))
                 };
             } catch (error) {

@@ -1,6 +1,6 @@
 import {useEffect, useMemo, useRef, useState} from "react";
 
-import {Search, Settings2, X} from "lucide-react";
+import {Activity, Search, Settings2, X} from "lucide-react";
 
 import {IndexedPlugin, usePluginIndex} from "../util/plugins";
 import {PluginDescription} from "./PluginDescription";
@@ -153,6 +153,13 @@ export const PluginPickerDialog = ({open, onClose, onPick, current}: PluginPicke
                                                     <span className="badge badge-ghost badge-sm gap-1" title="Has settings to configure">
                                                         <Settings2 className="w-3 h-3" />
                                                         Configurable
+                                                    </span>
+                                                )}
+
+                                                {plugin.live && (
+                                                    <span className="badge badge-soft badge-accent badge-sm gap-1" title="Updates its button live, e.g. to show a value">
+                                                        <Activity className="w-3 h-3" />
+                                                        Live
                                                     </span>
                                                 )}
                                             </div>

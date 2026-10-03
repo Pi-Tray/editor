@@ -4,13 +4,14 @@ import {delete_grid_cell, useGridCell, useGridShape} from "../util/grid";
 import {unwrap_plugin_reference, usePluginInfo} from "../util/plugins";
 import {PushButtonGrid} from "../components/PushButtonGrid";
 
-import {ImageIcon, MousePointerClick, Plus, Settings, Trash, X} from "lucide-react";
+import {Activity, ImageIcon, MousePointerClick, Plus, Settings, Trash, X} from "lucide-react";
 import {useWebSocket} from "../contexts/WSProvider.tsx";
 import {ConfigEditDialog} from "../components/ConfigEditDialog.tsx";
 import {IconPickerDialog} from "../components/IconPicker.tsx";
 import {CustomDynamicIcon} from "../components/CustomDynamicIcon.tsx";
 import {AssetPickerDialog} from "../components/AssetPickerDialog.tsx";
 import {PluginPickerDialog} from "../components/PluginPickerDialog.tsx";
+import {useLiveOverlayConnection} from "../util/live_overlay.ts";
 
 interface SidebarContentProps {
     coords: {x: number, y: number};
@@ -181,6 +182,10 @@ const ChooseIconButton = ({label, setLabel}: {label: string, setLabel: (new_labe
     );
 }
 
+const ControlledHint = ({prop}: {prop: string}) => (
+    <span className="text-xs opacity-60 flex gap-2 items-center"><Activity className="w-4 h-4" /> {prop} controlled by plugin</span>
+);
+
 const SidebarContent = ({coords}: SidebarContentProps) => {
     const [cell, setCellData] = useGridCell(coords.y, coords.x);
 
@@ -242,6 +247,8 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
     // still allow editing if the cell already has config, e.g. from before a plugin dropped its template, so it can be cleared
     const has_existing_config = !!plugin && Object.keys(plugin.config).length > 0;
 
+    // fields a live plugin sets itself, so editing them here would have no visible effect
+    const live_controls = new Set(plugin_info?.live_controls ?? []);
     if (!cell) {
         return (
             <div className="flex flex-col gap-2">
@@ -256,59 +263,65 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
 
     return (
         <div className="flex flex-col gap-6 flex-1">
-            <SidebarSection
-                title="Label"
-                title_end={
-                    <div className="flex items-center gap-3 text-xs" role="radiogroup" aria-label="Label type">
-                        <label className="flex items-center gap-1.5 cursor-pointer">
-                            <input
-                                type="radio"
-                                name="label_type"
-                                className="radio radio-xs"
-                                checked={!cell.text_is_icon}
-                                onChange={() => setCellData({...cell, text_is_icon: false})}
-                            />
-                            Text
-                        </label>
+            {!live_controls.has("label") ? (
+                <SidebarSection
+                    title="Label"
+                    title_end={
+                        <div className="flex items-center gap-3 text-xs" role="radiogroup" aria-label="Label type">
+                            <label className="flex items-center gap-1.5 cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="label_type"
+                                    className="radio radio-xs"
+                                    checked={!cell.text_is_icon}
+                                    onChange={() => setCellData({...cell, text_is_icon: false})}
+                                />
+                                Text
+                            </label>
 
-                        <label className="flex items-center gap-1.5 cursor-pointer">
-                            <input
-                                type="radio"
-                                name="label_type"
-                                className="radio radio-xs"
-                                checked={!!cell.text_is_icon}
-                                onChange={() => setCellData({...cell, text_is_icon: true})}
-                            />
-                            Icon
-                        </label>
-                    </div>
-                }
-            >
-                {cell.text_is_icon ? (
-                    <ChooseIconButton label={cell_text_input} setLabel={new_label => {
-                        setCellTextInput(new_label);
-                        setCellData({
-                            ...cell,
-                            text: new_label
-                        });
-                    }} />
-                ) : (
-                    <input
-                        className="input input-bordered h-10 w-full"
-                        aria-label="Label text"
-                        placeholder="Button text"
-                        value={cell_text_input}
-                        onChange={e => setCellTextInput(e.target.value)}
-                        onBlur={() => {
-                            // TODO: fix the logic with the debounced autosave, it was just too many hooks setting each other off causing blank outs and infinite loops
+                            <label className="flex items-center gap-1.5 cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="label_type"
+                                    className="radio radio-xs"
+                                    checked={!!cell.text_is_icon}
+                                    onChange={() => setCellData({...cell, text_is_icon: true})}
+                                />
+                                Icon
+                            </label>
+                        </div>
+                    }
+                >
+                    {cell.text_is_icon ? (
+                        <ChooseIconButton label={cell_text_input} setLabel={new_label => {
+                            setCellTextInput(new_label);
                             setCellData({
                                 ...cell,
-                                text: cell_text_input
+                                text: new_label
                             });
-                        }}
-                    />
-                )}
-            </SidebarSection>
+                        }} />
+                    ) : (
+                        <input
+                            className="input input-bordered h-10 w-full"
+                            aria-label="Label text"
+                            placeholder="Button text"
+                            value={cell_text_input}
+                            onChange={e => setCellTextInput(e.target.value)}
+                            onBlur={() => {
+                                // TODO: fix the logic with the debounced autosave, it was just too many hooks setting each other off causing blank outs and infinite loops
+                                setCellData({
+                                    ...cell,
+                                    text: cell_text_input
+                                });
+                            }}
+                        />
+                    )}
+                </SidebarSection>
+            ) : (
+                <SidebarSection title="Label">
+                    <ControlledHint prop="Label" />
+                </SidebarSection>
+            )}
 
             <SidebarSection title="Plugin">
                 <PluginSelect value={plugin ? plugin.name : null} onChange={new_plugin_name => {
@@ -342,30 +355,36 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
             </SidebarSection>
 
             <SidebarSection title="Background">
-                <div className="flex gap-2">
-                    <SidebarButton onClick={() => setBackgroundPickerOpen(true)} Icon={ImageIcon} variant="soft" className="flex-1">
-                        {cell.background ? "Change background" : "Set background"}
-                    </SidebarButton>
+                {!live_controls.has("background") ? (
+                    <>
+                        <div className="flex gap-2">
+                            <SidebarButton onClick={() => setBackgroundPickerOpen(true)} Icon={ImageIcon} variant="soft" className="flex-1">
+                                {cell.background ? "Change background" : "Set background"}
+                            </SidebarButton>
 
-                    {cell.background && (
-                        <button type="button" className="btn btn-ghost btn-sm btn-square" title="Remove background" onClick={() => setCellData({...cell, background: undefined})}>
-                            <X className="w-4 h-4" />
-                        </button>
-                    )}
-                </div>
+                            {cell.background && (
+                                <button type="button" className="btn btn-ghost btn-sm btn-square" title="Remove background" onClick={() => setCellData({...cell, background: undefined})}>
+                                    <X className="w-4 h-4" />
+                                </button>
+                            )}
+                        </div>
 
-                <AssetPickerDialog
-                    open={background_picker_open}
-                    onClose={close_background_picker}
-                    selected_id={cell.background}
-                    onPick={asset_id => setCellData({...cell, background: asset_id})}
-                />
+                        <AssetPickerDialog
+                            open={background_picker_open}
+                            onClose={close_background_picker}
+                            selected_id={cell.background}
+                            onPick={asset_id => setCellData({...cell, background: asset_id})}
+                        />
+                    </>
+                ) : <ControlledHint prop="Background" />}
             </SidebarSection>
 
             <div className="mt-auto mb-12 flex flex-col gap-2">
-                <SidebarButton onClick={simulate_button_push} Icon={MousePointerClick} className="btn-primary">
-                    Simulate button push
-                </SidebarButton>
+                {plugin_info?.pushable !== false && (
+                    <SidebarButton onClick={simulate_button_push} Icon={MousePointerClick} className="btn-primary">
+                        Simulate button push
+                    </SidebarButton>
+                )}
 
                 <ConfirmSidebarButton onConfirm={delete_button} Icon={Trash} className="btn-error">
                     Delete button
@@ -376,6 +395,9 @@ const SidebarContent = ({coords}: SidebarContentProps) => {
 }
 
 export const GridEditorPage = () => {
+    // live tile previews from the server
+    useLiveOverlayConnection();
+
     const [shape, setGridShape] = useGridShape();
 
     // when a button is selected, the sidebar will be open
@@ -449,4 +471,3 @@ export const GridEditorPage = () => {
 // TODO: bg dimming option
 // TODO: text color option
 // TODO: text font selection
-// TODO: "live" tiles/buttons where the server sends info, needs more plugin interface, could show stuff like gpu utilisation etc
